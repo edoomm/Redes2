@@ -1,0 +1,9 @@
+Cliente: /127.0.0.1 Ganador
+Tu tiempo fue: 0 hrs. 0 mins. 2 segs. 
+
+Cliente: /127.0.0.1 Perdedor
+Tu tiempo fue: 0 hrs. 0 mins. 2 segs. 
+
+Cliente: /127.0.0.1 Ganador
+Tiempo: 0 hrs. 0 mins. 22 segs. 
+
