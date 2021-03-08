@@ -1,6 +1,10 @@
 
+import java.io.File;
 import java.util.ArrayList;
-
+/*
+    Clase comunicadora entre la Consola, el ExploradorDeArchivos y 
+    el Cliente
+*/
 public class EjecutorDeComandos {
     private ExploradorDeArchivos explorador;
     private Cliente cliente;
@@ -9,53 +13,77 @@ public class EjecutorDeComandos {
     public EjecutorDeComandos(String rutaDeInicio) {
         ruta = rutaDeInicio;
         explorador = new ExploradorDeArchivos();
+        cliente = new Cliente();
+        cliente.establecerConexion();
+    }
+    
+    public String obtenerUbicacion () {
+        return explorador.obtenerRuta();
     }
     
     public String ejecutarComando (String comando) {
-        String[] partesComando = comando.split(" ");
-        if ( partesComando.length == 0 ) return "";
-        String instruccion = partesComando[0];
-        ArrayList<String> argumentos = new ArrayList<>();
-        for ( int i = 1 ; i < partesComando.length ; i++ ) {
-            argumentos.add(partesComando[i]);
-        }
+        Instruccion instruccion = new Instruccion(comando);
         
-        switch ( comando ) {
+        switch ( instruccion.getComando() ) {
             // Comandos locales
             case "lsl": // listar directorio actual local
-                ArrayList<String> listaArchivos = explorador.listarDirectorio(ruta);
-                return obtenerCadena(listaArchivos);
+                Directorio directorio = explorador.listarDirectorio();
+                return directorio.toString();
             case "cdl": // Cambiar ruta actual local
-                return "";
+                if ( instruccion.getArgumentos().size() > 0 ) {
+                    explorador.cambiarDirectorio(instruccion.getArgumento(0));
+                    return "";
+                } else {
+                    return "No such file or directory";
+                }
             // Comandos remotos
             case "lss": // Listar directorio actual del servidor
-                // return cliente.listarDirectorioServidor();
-                return "";
-            case "cdls": // Cambiar ruta actual del servidor
-                // return cliente.listarDirectorioServidor();
-                return "";
-            case "send":
-                // return cliente.enviarArchivos(argumentos);
-                return "";
+                cliente.enviarInstruccion(instruccion);
+                Directorio directorioServidor = (Directorio)cliente.recibirObjeto();
+                return directorioServidor.toString();
+            case "cds": // Cambiar ruta actual del servidor
+                cliente.enviarInstruccion(instruccion);
+                String respuesta = (String)cliente.recibirObjeto();
+                return "Current dir: " + respuesta;
+            case "send": // Enviar archivos o directorios
+                enviarArchivos(instruccion);
+                return "Operation Succesful";
             case "get":
                 // return cliente.obtenerArchivos(argumentos);
                 return "";
             case "rm":
-                // return cliente.eliminarArchivos(argumentos);
-                return "";
+                cliente.enviarInstruccion(instruccion);
+                return "Operation Succesful";
             case "mkdir":
-                // return cliente.crearDirectorio(argumentos);
+                cliente.enviarInstruccion(instruccion);
+                return "Operation Succesful";
+            case "":
                 return "";
             default:
                 return "Command not found";
         }
     }
     
-    public String obtenerCadena ( ArrayList<String> listaArchivos ) {
-        String textoLista = "";
-        for ( int i = 0 ; i < listaArchivos.size() ; i++ ) {
-            textoLista += "   " + listaArchivos.get(i) + "\n";
+    public void enviarArchivos(Instruccion instruccion) {
+        ArrayList<String> archivos = instruccion.getArgumentos();
+        for ( int i = 0 ; i < archivos.size() ; i++ ) {
+            String ruta = explorador.obtenerRuta() + "\\" + archivos.get(i);
+            enviarArchivo(ruta);
         }
-        return textoLista;
     }
+    
+    public void enviarArchivo (String ruta) {
+        File archivo = new File(ruta);
+        if ( archivo.exists() ) {
+            if ( archivo.isDirectory() ) {
+                File[] subarchivos = archivo.listFiles();
+                for ( int i = 0 ; i < subarchivos.length ; i++ ) {
+                    enviarArchivo(ruta + "\\" + subarchivos[i].getName());
+                }
+            } else {
+                cliente.enviarArchivo(archivo);
+            }
+        }
+    }
+    
 }

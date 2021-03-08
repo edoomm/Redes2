@@ -2,31 +2,31 @@ import java.io.File;
 import java.util.Scanner;
 
 public class Consola {
-    private String ubicacion;
     private Scanner lector;
     private EjecutorDeComandos ejecutor;
     
     public Consola () {
-        ubicacion = "";
         lector = new Scanner (System.in);
-        ejecutor = new EjecutorDeComandos(ubicacion);
+        ejecutor = new EjecutorDeComandos(System.getProperty("user.home") + "\\desktop");
     }
     
-    private void mostrarUbicacion() {
-        File file = new File(ubicacion);
-        String rutaAbsoluta = file.getAbsolutePath();
-        
-        System.out.println(rutaAbsoluta + " $: ");
-        //leerComando();
+    // Muestra el prompt en consola
+    private void mostrarPrompt() {
+        String ubicacion = ejecutor.obtenerUbicacion();
+        System.out.println(ubicacion + " $: ");
     }
     
+    // Ciclo infinito para leer los comandos
+    // Ver "EjecutorDeComandos.ejecutarComando()" para ver
+    // los comandos posibles
     public void leerComando () {
         String comando = "";
+        String respuesta = "";
         while ( !comando.equals("exit") ) {
-            mostrarUbicacion();
+            mostrarPrompt();
             comando = lector.nextLine();
-            
-            ejecutor.ejecutarComando(comando);
+            respuesta = ejecutor.ejecutarComando(comando);
+            System.out.println(respuesta);
         }
     }
     
