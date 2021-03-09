@@ -1,4 +1,5 @@
 
+import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -68,10 +69,11 @@ public class Servidor {
             case "cds": // Cambiar directorio actual
                 cambiarDirectorio(instruccion.getArgumento(0));
             break;
-            case "rm": // elimina un archivo en el directorio actual
-                
+            case "rms": // elimina un archivo en el directorio actual
+                removerArchivo(instruccion.getArgumento(0));
             break;
             case "mkdirs": // Cre un nuevo directorio en el directorio actual
+                System.out.println("Creando directorio: " + instruccion.getArgumento(0));
                 crearDirectorio(instruccion.getArgumento(0));
             break;
             case "send": // Recibe un nuevo archivo y lo guarda en el directorio actual
@@ -110,27 +112,48 @@ public class Servidor {
         explorador.crearDirectorio(nombre);
     }
     
+    // Elimina el archivo con el nombre "nombre"
+    // del directorio actual
+    private void removerArchivo(String nombre) {
+        explorador.removerArchivo(nombre);
+    }
+    
+    private void eliminarDirectorio (String nombre) {
+        explorador.removerArchivo(nombre);
+    }
+    
     // Se recibe un archivo desde el cliente
     private void recibirArchivo () {
         try {
             MetainformacionArchivo infoArchivo = (MetainformacionArchivo)flujoEntrada.readObject();
-            FileOutputStream flujoSalidaArchivo = new FileOutputStream(infoArchivo.getNombreArchivo());
+            String nombreArchivo = explorador.obtenerRuta() + "\\" + infoArchivo.getNombreArchivo();
+            FileOutputStream flujoSalidaArchivo = new FileOutputStream(nombreArchivo);
             
             long longitudArchivo = infoArchivo.getLongitudArchivo();
-            long bytesLeidos = 0, bytesRestantes = longitudArchivo;
+            long bytesRestantes = longitudArchivo;
+            int bytesLeidos = 0;
+            
+            DataInputStream flujoDatosEntrada = new java.io.DataInputStream(socketCliente.getInputStream());
             
             byte[] buffer = new byte[1500];
-            while (bytesRestantes > 0 ) {
-                InformacionArchivo datosArchivo = (InformacionArchivo)flujoEntrada.readObject();
-                buffer = datosArchivo.getDatos();
-                flujoSalidaArchivo.write(buffer,0,buffer.length);
-                bytesRestantes -= buffer.length;
+            System.out.println("Recibiendo archivo: " + nombreArchivo);
+            while (bytesRestantes > 0 && (bytesLeidos = flujoDatosEntrada.read(buffer))!= -1) {
+                System.out.println("Escribiendo datos al archivo");
+                flujoSalidaArchivo.write(buffer, 0, bytesLeidos);
+                bytesRestantes -= bytesLeidos;
+                System.out.println("Restante: " + bytesRestantes + " bytes");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
         }
+    }
+    
+    public static void main(String[] args) {
+        Servidor servidor = new Servidor();
+        servidor.iniciarServidor();
+        servidor.iniciarServicio();
     }
 
 }

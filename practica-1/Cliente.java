@@ -1,4 +1,5 @@
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,15 +56,20 @@ public class Cliente {
             MetainformacionArchivo infoArchivo = new MetainformacionArchivo(nombreArchivo, longitudArchivo, esDirectorio);
             // Enviamos la metainformación del archivo
             flujoSalida.writeObject(infoArchivo);
+            flujoSalida.flush();
             // Proceso de transferencia del archivo
+            DataOutputStream flujoDatosSalida = new DataOutputStream(socket.getOutputStream());
             byte[] buffer = new byte[1500];
-            long bytesLeidos = 0, bytesRestantes = longitudArchivo;
+            long bytesRestantes = longitudArchivo;
+            int bytesLeidos = 0;
             // Mientras falten bytes por enviar y se puedan leer bytes del 
             // archivo, se envía un paquete de información
-            while (bytesRestantes > 0 && (bytesLeidos = flujoEntrada.read(buffer)) != -1) {
-                flujoSalida.writeObject(infoArchivo);
-                flujoSalida.flush();
+            System.out.println("Enviando archivo: " + archivo.getAbsolutePath());
+            while (bytesRestantes > 0 && (bytesLeidos = flujoEntradaArchivo.read(buffer)) != -1) {
+                flujoDatosSalida.write(buffer, 0, bytesLeidos);
+                flujoDatosSalida.flush();
                 bytesRestantes -= bytesLeidos;
+                System.out.println("Restante: " + bytesRestantes);
             }
         } catch(IOException ioe) {
             ioe.printStackTrace();

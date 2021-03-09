@@ -58,6 +58,10 @@ public class Instruccion implements Serializable {
             return "";
         }
     }
+    
+    public void insertarArgumento(String argumento) {
+        argumentos.add(argumento);
+    }
 
     @Override
     public String toString() {

@@ -84,9 +84,20 @@ public class ExploradorDeArchivos {
     // Remueve un archivo con nombre "nombre" en la 
     // carpeta actual
     public boolean removerArchivo(String nombre) {
-        return false;
+        File file = new File(ruta + "\\" + nombre);
+        removerArchivo(file);
+        return file.delete();
     }
-     
+    
+    public boolean removerArchivo(File archivo) {
+        if ( archivo.isDirectory() ) {
+            File[] subarchivos = archivo.listFiles();
+            for ( File subarchivo : subarchivos ) {
+                removerArchivo(subarchivo);
+            }
+        }
+        return archivo.delete();
+    }
     
     public static void main(String[] args) {
         ExploradorDeArchivos e = new ExploradorDeArchivos();
@@ -95,8 +106,19 @@ public class ExploradorDeArchivos {
         System.out.println(e.listarDirectorio());
         
         e.crearDirectorio("Prueba");
-        
         e.cambiarDirectorio("prueba");
+        
+        System.out.println(e.obtenerRuta());
+        System.out.println(e.listarDirectorio());
+        
+        e.crearDirectorio("prueba2");
+        
+        e.cambiarDirectorio("prueba2");
+        System.out.println(e.obtenerRuta());
+        System.out.println(e.listarDirectorio());
+        
+        e.cambiarDirectorio("..");
+        e.removerArchivo("prueba2");
         
         System.out.println(e.obtenerRuta());
         System.out.println(e.listarDirectorio());

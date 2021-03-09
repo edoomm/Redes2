@@ -44,17 +44,17 @@ public class EjecutorDeComandos {
             case "cds": // Cambiar ruta actual del servidor
                 cliente.enviarInstruccion(instruccion);
                 String respuesta = (String)cliente.recibirObjeto();
-                return "Current dir: " + respuesta;
+                return "Current directory: \n" + respuesta;
             case "send": // Enviar archivos o directorios
                 enviarArchivos(instruccion);
                 return "Operation Succesful";
             case "get":
                 // return cliente.obtenerArchivos(argumentos);
                 return "";
-            case "rm":
+            case "rms":
                 cliente.enviarInstruccion(instruccion);
                 return "Operation Succesful";
-            case "mkdir":
+            case "mkdirs":
                 cliente.enviarInstruccion(instruccion);
                 return "Operation Succesful";
             case "":
@@ -76,13 +76,25 @@ public class EjecutorDeComandos {
         File archivo = new File(ruta);
         if ( archivo.exists() ) {
             if ( archivo.isDirectory() ) {
+                Instruccion crearDirectorio = new Instruccion("mkdirs " + archivo.getName());
+                cliente.enviarInstruccion(crearDirectorio);
+                Instruccion cambiarDirectorio = new Instruccion("cds " + archivo.getName());
+                cliente.enviarInstruccion(cambiarDirectorio);
                 File[] subarchivos = archivo.listFiles();
                 for ( int i = 0 ; i < subarchivos.length ; i++ ) {
-                    enviarArchivo(ruta + "\\" + subarchivos[i].getName());
+                    enviarArchivo(subarchivos[i].getAbsolutePath());
                 }
+                cambiarDirectorio = new Instruccion("cds ..");
+                cliente.enviarInstruccion(cambiarDirectorio);
             } else {
+                Instruccion instruccion = new Instruccion();
+                instruccion.setComando("send");
+                instruccion.insertarArgumento(archivo.getName());
+                cliente.enviarInstruccion(instruccion);
                 cliente.enviarArchivo(archivo);
             }
+        } else {
+            System.out.println("No existe el archivo");
         }
     }
     
