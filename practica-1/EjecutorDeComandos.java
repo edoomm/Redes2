@@ -76,20 +76,15 @@ public class EjecutorDeComandos {
         File archivo = new File(ruta);
         if ( archivo.exists() ) {
             if ( archivo.isDirectory() ) {
-                Instruccion crearDirectorio = new Instruccion("mkdirs " + archivo.getName());
-                cliente.enviarInstruccion(crearDirectorio);
-                Instruccion cambiarDirectorio = new Instruccion("cds " + archivo.getName());
-                cliente.enviarInstruccion(cambiarDirectorio);
+                ejecutarComando("mkdirs " + archivo.getName());
+                ejecutarComando("cds " + archivo.getName());
                 File[] subarchivos = archivo.listFiles();
                 for ( int i = 0 ; i < subarchivos.length ; i++ ) {
                     enviarArchivo(subarchivos[i].getAbsolutePath());
                 }
-                cambiarDirectorio = new Instruccion("cds ..");
-                cliente.enviarInstruccion(cambiarDirectorio);
+                ejecutarComando("cds ..");
             } else {
-                Instruccion instruccion = new Instruccion();
-                instruccion.setComando("send");
-                instruccion.insertarArgumento(archivo.getName());
+                Instruccion instruccion = new Instruccion("send " + archivo.getName());
                 cliente.enviarInstruccion(instruccion);
                 cliente.enviarArchivo(archivo);
             }

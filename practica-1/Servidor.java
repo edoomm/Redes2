@@ -64,9 +64,11 @@ public class Servidor {
         Instruccion instruccion = (Instruccion)flujoEntrada.readObject();
         switch ( instruccion.getComando() ) {
             case "lss": // Listar el directorio actual
+                System.out.println("Listando directorio");
                 listarDirectorio();
             break;
             case "cds": // Cambiar directorio actual
+                System.out.println("Cambiando directorio a: " + explorador.obtenerRuta() + "\\" + instruccion.getArgumento(0));
                 cambiarDirectorio(instruccion.getArgumento(0));
             break;
             case "rms": // elimina un archivo en el directorio actual
@@ -140,9 +142,12 @@ public class Servidor {
             while (bytesRestantes > 0 && (bytesLeidos = flujoDatosEntrada.read(buffer))!= -1) {
                 System.out.println("Escribiendo datos al archivo");
                 flujoSalidaArchivo.write(buffer, 0, bytesLeidos);
+                flujoSalidaArchivo.flush();
                 bytesRestantes -= bytesLeidos;
                 System.out.println("Restante: " + bytesRestantes + " bytes");
             }
+            flujoSalidaArchivo.close();
+            System.out.println("Archivo : " + nombreArchivo + " recibido");
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (ClassNotFoundException cnfe) {

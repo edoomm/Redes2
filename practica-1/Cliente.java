@@ -71,6 +71,8 @@ public class Cliente {
                 bytesRestantes -= bytesLeidos;
                 System.out.println("Restante: " + bytesRestantes);
             }
+            flujoEntradaArchivo.close();
+            System.out.println("Archivo : " + archivo.getAbsolutePath() + " enviado");
         } catch(IOException ioe) {
             ioe.printStackTrace();
         }
