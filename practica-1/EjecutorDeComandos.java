@@ -32,11 +32,14 @@ public class EjecutorDeComandos {
             case "cdl": // Cambiar ruta actual local
                 if ( instruccion.getArgumentos().size() > 0 ) {
                     explorador.cambiarDirectorio(instruccion.getArgumento(0));
-                    return "";
+                    return "Changed Directory";
                 } else {
                     return "No such file or directory";
                 }
             // Comandos remotos
+            case "mkdirl":
+                explorador.crearDirectorio(instruccion.getArgumento(0));
+                return "Directory "+ instruccion.getArgumento(0) +" created";
             case "lss": // Listar directorio actual del servidor
                 cliente.enviarInstruccion(instruccion);
                 Directorio directorioServidor = (Directorio)cliente.recibirObjeto();
@@ -49,7 +52,8 @@ public class EjecutorDeComandos {
                 enviarArchivos(instruccion);
                 return "Operation Succesful";
             case "get":
-                // return cliente.obtenerArchivos(argumentos);
+                cliente.enviarInstruccion(instruccion);
+                recibirArchivos();
                 return "";
             case "rms":
                 cliente.enviarInstruccion(instruccion);
@@ -57,6 +61,9 @@ public class EjecutorDeComandos {
             case "mkdirs":
                 cliente.enviarInstruccion(instruccion);
                 return "Operation Succesful";
+            case "exit":
+                cliente.enviarInstruccion(instruccion);
+                return "";
             case "":
                 return "";
             default:
@@ -92,5 +99,22 @@ public class EjecutorDeComandos {
             System.out.println("No existe el archivo");
         }
     }
+    
+    private void recibirArchivos() {
+        while ( true ) {
+            String comando = (String)cliente.recibirObjeto();
+            System.out.println("Comando recibido: " + comando);
+            switch (comando) {
+                case "finish":
+                    return;
+                case "rcv":
+                    cliente.recibirArchivo(explorador.obtenerRuta());
+                break;
+                default:
+                    System.out.println(ejecutarComando(comando));
+            }
+        }
+    }
+    
     
 }

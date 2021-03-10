@@ -1,5 +1,8 @@
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -74,7 +77,7 @@ public class Servidor {
             case "rms": // elimina un archivo en el directorio actual
                 removerArchivo(instruccion.getArgumento(0));
             break;
-            case "mkdirs": // Cre un nuevo directorio en el directorio actual
+            case "mkdirs": // Crea un nuevo directorio en el directorio actual
                 System.out.println("Creando directorio: " + instruccion.getArgumento(0));
                 crearDirectorio(instruccion.getArgumento(0));
             break;
@@ -82,7 +85,7 @@ public class Servidor {
                 recibirArchivo();
             break;
             case "get": // Envia un archivo del directorio actual
-                
+                enviarArchivos(instruccion.getArgumentos());
             break;
         }
     }
@@ -152,6 +155,79 @@ public class Servidor {
             ioe.printStackTrace();
         } catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
+        }
+    }
+    
+    private void enviarArchivos ( ArrayList<String> nombresArchivos ) {
+        try {
+            for ( int i = 0 ; i < nombresArchivos.size() ; i++ ) {
+                File archivo = new File(explorador.obtenerRuta() + "\\" + nombresArchivos.get(i));
+                if ( archivo.exists() ) {
+                    enviarArchivos(archivo);
+                }
+            }
+            System.out.println("Enviando instruccion: " + "finish ");
+            flujoSalida.writeObject("finish");
+            flujoSalida.flush();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+    
+    private void enviarArchivos (File archivo) throws IOException {
+        if ( archivo.isDirectory() ) {
+            System.out.println("Enviando instruccion: " + "mkdirl " + archivo.getName());
+            flujoSalida.writeObject("mkdirl " + archivo.getName());
+            flujoSalida.flush();
+            System.out.println("Enviando instruccion: " + "cdl " + archivo.getName());
+            flujoSalida.writeObject("cdl " + archivo.getName());
+            flujoSalida.flush();
+            File[] subarchivos = archivo.listFiles();
+                for ( int i = 0 ; i < subarchivos.length ; i++ ) {
+                    enviarArchivos(subarchivos[i]);
+                }
+            System.out.println("Enviando instruccion: " + "cdl ..");
+            flujoSalida.writeObject("cdl ..");
+            flujoSalida.flush();
+        } else {
+            System.out.println("Enviando instruccion: " + "rcv ..");
+            flujoSalida.writeObject("rcv");
+            flujoSalida.flush();
+            enviarArchivo(archivo);
+        }
+    }
+    
+    public void enviarArchivo ( File archivo ) {
+        try {
+            // Flujo para leer la información del archivo
+            FileInputStream flujoEntradaArchivo = new FileInputStream(archivo);
+            // Formamos paquete con la metainformación del archivo
+            long longitudArchivo = archivo.length();
+            String nombreArchivo = archivo.getName();
+            boolean esDirectorio = archivo.isDirectory();
+            
+            MetainformacionArchivo infoArchivo = new MetainformacionArchivo(nombreArchivo, longitudArchivo, esDirectorio);
+            // Enviamos la metainformación del archivo
+            flujoSalida.writeObject(infoArchivo);
+            flujoSalida.flush();
+            // Proceso de transferencia del archivo
+            DataOutputStream flujoDatosSalida = new DataOutputStream(socketCliente.getOutputStream());
+            byte[] buffer = new byte[1500];
+            long bytesRestantes = longitudArchivo;
+            int bytesLeidos = 0;
+            // Mientras falten bytes por enviar y se puedan leer bytes del 
+            // archivo, se envía un paquete de información
+            System.out.println("Enviando archivo: " + archivo.getAbsolutePath());
+            while (bytesRestantes > 0 && (bytesLeidos = flujoEntradaArchivo.read(buffer)) != -1) {
+                flujoDatosSalida.write(buffer, 0, bytesLeidos);
+                flujoDatosSalida.flush();
+                bytesRestantes -= bytesLeidos;
+                System.out.println("Restante: " + bytesRestantes);
+            }
+            flujoEntradaArchivo.close();
+            System.out.println("Archivo : " + archivo.getAbsolutePath() + " enviado");
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
         }
     }
     

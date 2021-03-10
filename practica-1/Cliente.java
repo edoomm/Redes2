@@ -1,7 +1,9 @@
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -89,5 +91,35 @@ public class Cliente {
             cnfe.printStackTrace();
         }
         return null;
+    }
+    
+    public void recibirArchivo (String ruta) {
+        try {
+            MetainformacionArchivo infoArchivo = (MetainformacionArchivo)flujoEntrada.readObject();
+            String nombreArchivo = ruta + "\\" + infoArchivo.getNombreArchivo();
+            FileOutputStream flujoSalidaArchivo = new FileOutputStream(nombreArchivo);
+            
+            long longitudArchivo = infoArchivo.getLongitudArchivo();
+            long bytesRestantes = longitudArchivo;
+            int bytesLeidos = 0;
+            
+            DataInputStream flujoDatosEntrada = new java.io.DataInputStream(socket.getInputStream());
+            
+            byte[] buffer = new byte[1500];
+            System.out.println("Recibiendo archivo: " + nombreArchivo);
+            while (bytesRestantes > 0 && (bytesLeidos = flujoDatosEntrada.read(buffer))!= -1) {
+                System.out.println("Escribiendo datos al archivo");
+                flujoSalidaArchivo.write(buffer, 0, bytesLeidos);
+                flujoSalidaArchivo.flush();
+                bytesRestantes -= bytesLeidos;
+                System.out.println("Restante: " + bytesRestantes + " bytes");
+            }
+            flujoSalidaArchivo.close();
+            System.out.println("Archivo : " + nombreArchivo + " recibido");
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } catch (ClassNotFoundException cnfe) {
+            cnfe.printStackTrace();
+        }
     }
 }
