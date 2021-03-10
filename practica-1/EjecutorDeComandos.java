@@ -28,46 +28,51 @@ public class EjecutorDeComandos {
             // Comandos locales
             case "lsl": // listar directorio actual local
                 Directorio directorio = explorador.listarDirectorio();
-                return directorio.toString();
+                return directorio.toString() + "\n";
             case "cdl": // Cambiar ruta actual local
                 if ( instruccion.getArgumentos().size() > 0 ) {
                     explorador.cambiarDirectorio(instruccion.getArgumento(0));
-                    return "Changed Directory";
+                    return "Current Directory: " + explorador.obtenerRuta() + "\n";
                 } else {
-                    return "No such file or directory";
+                    return "No such file or directory" + "\n";
                 }
-            // Comandos remotos
             case "mkdirl":
                 explorador.crearDirectorio(instruccion.getArgumento(0));
-                return "Directory "+ instruccion.getArgumento(0) +" created";
+                return "Directory "+ instruccion.getArgumento(0) +" created" + "\n";
+            case "pwdl":
+                return "Current Local Directory: " + explorador.obtenerRuta() + "\n";
+            // Comandos remotos
             case "lss": // Listar directorio actual del servidor
                 cliente.enviarInstruccion(instruccion);
                 Directorio directorioServidor = (Directorio)cliente.recibirObjeto();
-                return directorioServidor.toString();
+                return directorioServidor.toString() + "\n";
             case "cds": // Cambiar ruta actual del servidor
                 cliente.enviarInstruccion(instruccion);
-                String respuesta = (String)cliente.recibirObjeto();
-                return "Current directory: \n" + respuesta;
+                return "Server Directory Changed\n";
             case "send": // Enviar archivos o directorios
                 enviarArchivos(instruccion);
-                return "Operation Succesful";
-            case "get":
+                return "Files Succesfullly Sent" + "\n";
+            case "get": // Pide al servidor los archivos especificados
                 cliente.enviarInstruccion(instruccion);
                 recibirArchivos();
-                return "";
+                return "Files Succesfully Received" + "\n";
             case "rms":
                 cliente.enviarInstruccion(instruccion);
-                return "Operation Succesful";
+                return "File Succesfully Deleted" + "\n";
             case "mkdirs":
                 cliente.enviarInstruccion(instruccion);
-                return "Operation Succesful";
+                return "Directory Succesfully Created" + "\n";
             case "exit":
                 cliente.enviarInstruccion(instruccion);
-                return "";
+                return "Bye!" + "\n";
+            case "pwds":
+                cliente.enviarInstruccion(instruccion);
+                String directorioActual = (String)cliente.recibirObjeto();
+                return directorioActual + "\n";
             case "":
                 return "";
             default:
-                return "Command not found";
+                return "Command not found" + "\n";
         }
     }
     
@@ -104,6 +109,7 @@ public class EjecutorDeComandos {
         while ( true ) {
             String comando = (String)cliente.recibirObjeto();
             System.out.println("Comando recibido: " + comando);
+            
             switch (comando) {
                 case "finish":
                     return;

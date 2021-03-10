@@ -26,7 +26,7 @@ public class Consola {
             mostrarPrompt();
             comando = lector.nextLine();
             respuesta = ejecutor.ejecutarComando(comando);
-            System.out.println(respuesta);
+            System.out.print(respuesta);
         }
     }
     

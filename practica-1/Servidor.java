@@ -17,6 +17,7 @@ public class Servidor {
     private ObjectOutputStream flujoSalida;
     private ObjectInputStream flujoEntrada;
     private ExploradorDeArchivos explorador;
+    private boolean active;
     
     
     public Servidor () {
@@ -25,6 +26,7 @@ public class Servidor {
         flujoSalida = null;
         flujoEntrada = null;
         explorador = new ExploradorDeArchivos(System.getProperty("user.home") + "\\desktop");
+        active = false;
     }
     
     public Servidor (String rutaInicial) {
@@ -51,9 +53,13 @@ public class Servidor {
     // Se inicia la recepcion de instrucciones del cliente
     public void iniciarServicio () {
         try {
-            while (true) {
+            System.out.println("Starting communications");
+            active = true;
+            while (active) {
                 leerInstruccion();
             }
+            flujoSalida.close();
+            flujoEntrada.close();
         } catch ( IOException ioe ) {
             ioe.printStackTrace();
         } catch ( java.lang.ClassNotFoundException cnfe ) {
@@ -66,12 +72,13 @@ public class Servidor {
     public void leerInstruccion () throws IOException, ClassNotFoundException {
         Instruccion instruccion = (Instruccion)flujoEntrada.readObject();
         switch ( instruccion.getComando() ) {
+            case "pwds":
+                mostrarDirectorioActual();
+            break;
             case "lss": // Listar el directorio actual
-                System.out.println("Listando directorio");
                 listarDirectorio();
             break;
             case "cds": // Cambiar directorio actual
-                System.out.println("Cambiando directorio a: " + explorador.obtenerRuta() + "\\" + instruccion.getArgumento(0));
                 cambiarDirectorio(instruccion.getArgumento(0));
             break;
             case "rms": // elimina un archivo en el directorio actual
@@ -87,6 +94,18 @@ public class Servidor {
             case "get": // Envia un archivo del directorio actual
                 enviarArchivos(instruccion.getArgumentos());
             break;
+            case "exit":
+                active = false;
+            break;
+        }
+    }
+    
+    private void mostrarDirectorioActual () {
+        try {
+            flujoSalida.writeObject(explorador.obtenerRuta());
+            flujoSalida.flush();
+        } catch ( IOException ioe ) {
+            ioe.printStackTrace();
         }
     }
     
@@ -96,6 +115,7 @@ public class Servidor {
         try {
             flujoSalida.writeObject(lista);
             flujoSalida.flush();
+            System.out.println("");
         } catch ( IOException ioe ) {
             ioe.printStackTrace();
         }
@@ -103,13 +123,7 @@ public class Servidor {
     
     // Cambia el directorio actual del servidor
     private void cambiarDirectorio (String ruta) {
-        try {
-            explorador.cambiarDirectorio(ruta);
-            flujoSalida.writeObject(explorador.obtenerRuta());
-            flujoSalida.flush();
-        } catch ( IOException ioe ) {
-            ioe.printStackTrace();
-        }
+        explorador.cambiarDirectorio(ruta);
     }
     
     // Crea un nuevo directorio con nombre "nombre"
@@ -166,9 +180,9 @@ public class Servidor {
                     enviarArchivos(archivo);
                 }
             }
-            System.out.println("Enviando instruccion: " + "finish ");
             flujoSalida.writeObject("finish");
             flujoSalida.flush();
+            System.out.println("Enviando instruccion: " + "finish ");
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -176,23 +190,23 @@ public class Servidor {
     
     private void enviarArchivos (File archivo) throws IOException {
         if ( archivo.isDirectory() ) {
-            System.out.println("Enviando instruccion: " + "mkdirl " + archivo.getName());
             flujoSalida.writeObject("mkdirl " + archivo.getName());
             flujoSalida.flush();
-            System.out.println("Enviando instruccion: " + "cdl " + archivo.getName());
+            System.out.println("Enviando instruccion: " + "mkdirl " + archivo.getName());
             flujoSalida.writeObject("cdl " + archivo.getName());
             flujoSalida.flush();
+            System.out.println("Enviando instruccion: " + "cdl " + archivo.getName());
             File[] subarchivos = archivo.listFiles();
-                for ( int i = 0 ; i < subarchivos.length ; i++ ) {
-                    enviarArchivos(subarchivos[i]);
-                }
-            System.out.println("Enviando instruccion: " + "cdl ..");
+            for ( int i = 0 ; i < subarchivos.length ; i++ ) {
+                enviarArchivos(subarchivos[i]);
+            }
             flujoSalida.writeObject("cdl ..");
             flujoSalida.flush();
+            System.out.println("Enviando instruccion: " + "cdl ..");
         } else {
-            System.out.println("Enviando instruccion: " + "rcv ..");
             flujoSalida.writeObject("rcv");
             flujoSalida.flush();
+            System.out.println("Enviando instruccion: " + "rcv");
             enviarArchivo(archivo);
         }
     }
@@ -226,8 +240,11 @@ public class Servidor {
             }
             flujoEntradaArchivo.close();
             System.out.println("Archivo : " + archivo.getAbsolutePath() + " enviado");
+            Thread.sleep(100);
         } catch(IOException ioe) {
             ioe.printStackTrace();
+        } catch ( InterruptedException ie ) {
+            ie.printStackTrace();
         }
     }
     
