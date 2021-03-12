@@ -25,7 +25,8 @@ public class Cliente {
     // Inicializamos el socket y los flujos
     public boolean establecerConexion () {
         try {
-            socket = new Socket ("127.0.0.1", 1309);
+            socket = new Socket ("192.168.100.157", 1309);
+            //socket = new Socket ("localhost", 1309);
             flujoSalida = new java.io.ObjectOutputStream(socket.getOutputStream());
             flujoEntrada = new java.io.ObjectInputStream(socket.getInputStream());
             return true;
@@ -40,6 +41,7 @@ public class Cliente {
         try {
             flujoSalida.writeObject(instruccion);
             flujoSalida.flush();
+            recibirNotificacion();
         } catch ( IOException ioe ) {
             ioe.printStackTrace();
         }
@@ -59,6 +61,8 @@ public class Cliente {
             // Enviamos la metainformación del archivo
             flujoSalida.writeObject(infoArchivo);
             flujoSalida.flush();
+            recibirNotificacion();
+
             // Proceso de transferencia del archivo
             DataOutputStream flujoDatosSalida = new DataOutputStream(socket.getOutputStream());
             byte[] buffer = new byte[1500];
@@ -75,6 +79,7 @@ public class Cliente {
             }
             flujoEntradaArchivo.close();
             System.out.println("Archivo : " + archivo.getAbsolutePath() + " enviado");
+            recibirNotificacion();
         } catch(IOException ioe) {
             ioe.printStackTrace();
         }
@@ -96,6 +101,8 @@ public class Cliente {
     public void recibirArchivo (String ruta) {
         try {
             MetainformacionArchivo infoArchivo = (MetainformacionArchivo)flujoEntrada.readObject();
+            enviarNotificacion();
+
             String nombreArchivo = ruta + "\\" + infoArchivo.getNombreArchivo();
             FileOutputStream flujoSalidaArchivo = new FileOutputStream(nombreArchivo);
             
@@ -116,10 +123,31 @@ public class Cliente {
             }
             flujoSalidaArchivo.close();
             System.out.println("Archivo : " + nombreArchivo + " recibido");
+            enviarNotificacion();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
         }
     }
+
+    public void enviarNotificacion () {
+        try {
+            flujoSalida.writeObject("ok");
+            flujoSalida.flush();
+        } catch ( IOException io ) {
+            io.printStackTrace();
+        }
+    }
+
+    public void recibirNotificacion () {
+        try {
+            String mensaje = (String)flujoEntrada.readObject();
+        } catch ( IOException io ) {
+            io.printStackTrace();
+        } catch ( ClassNotFoundException cnfe ) {
+            cnfe.printStackTrace();
+        }
+    }
+
 }

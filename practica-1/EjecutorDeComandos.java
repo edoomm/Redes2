@@ -48,6 +48,7 @@ public class EjecutorDeComandos {
                 return directorioServidor.toString() + "\n";
             case "cds": // Cambiar ruta actual del servidor
                 cliente.enviarInstruccion(instruccion);
+                cliente.recibirNotificacion();
                 return "Server Directory Changed\n";
             case "send": // Enviar archivos o directorios
                 enviarArchivos(instruccion);
@@ -56,11 +57,16 @@ public class EjecutorDeComandos {
                 cliente.enviarInstruccion(instruccion);
                 recibirArchivos();
                 return "Files Succesfully Received" + "\n";
+            case "rml":
+                explorador.removerArchivo(instruccion.getArgumento(0));
+                return "Archivo eliminado";
             case "rms":
                 cliente.enviarInstruccion(instruccion);
+                cliente.recibirNotificacion();
                 return "File Succesfully Deleted" + "\n";
             case "mkdirs":
                 cliente.enviarInstruccion(instruccion);
+                cliente.recibirNotificacion();
                 return "Directory Succesfully Created" + "\n";
             case "exit":
                 cliente.enviarInstruccion(instruccion);
@@ -108,16 +114,18 @@ public class EjecutorDeComandos {
     private void recibirArchivos() {
         while ( true ) {
             String comando = (String)cliente.recibirObjeto();
-            System.out.println("Comando recibido: " + comando);
             
             switch (comando) {
                 case "finish":
+                    cliente.enviarNotificacion();
                     return;
                 case "rcv":
+                    cliente.enviarNotificacion();
                     cliente.recibirArchivo(explorador.obtenerRuta());
                 break;
                 default:
                     System.out.println(ejecutarComando(comando));
+                    cliente.enviarNotificacion();
             }
         }
     }

@@ -70,7 +70,9 @@ public class Servidor {
     // Metodo que recibe las instrucciones, las clasifica y llama
     // al metodo correspondiente para ejecutarlas
     public void leerInstruccion () throws IOException, ClassNotFoundException {
-        Instruccion instruccion = (Instruccion)flujoEntrada.readObject();
+        Object objeto = flujoEntrada.readObject();
+        Instruccion instruccion = (Instruccion)objeto;
+        enviarNotificacion();
         switch ( instruccion.getComando() ) {
             case "pwds":
                 mostrarDirectorioActual();
@@ -80,13 +82,16 @@ public class Servidor {
             break;
             case "cds": // Cambiar directorio actual
                 cambiarDirectorio(instruccion.getArgumento(0));
+                enviarNotificacion();
             break;
             case "rms": // elimina un archivo en el directorio actual
                 removerArchivo(instruccion.getArgumento(0));
+                enviarNotificacion();
             break;
             case "mkdirs": // Crea un nuevo directorio en el directorio actual
                 System.out.println("Creando directorio: " + instruccion.getArgumento(0));
                 crearDirectorio(instruccion.getArgumento(0));
+                enviarNotificacion();
             break;
             case "send": // Recibe un nuevo archivo y lo guarda en el directorio actual
                 recibirArchivo();
@@ -115,7 +120,6 @@ public class Servidor {
         try {
             flujoSalida.writeObject(lista);
             flujoSalida.flush();
-            System.out.println("");
         } catch ( IOException ioe ) {
             ioe.printStackTrace();
         }
@@ -145,6 +149,8 @@ public class Servidor {
     private void recibirArchivo () {
         try {
             MetainformacionArchivo infoArchivo = (MetainformacionArchivo)flujoEntrada.readObject();
+            enviarNotificacion();
+
             String nombreArchivo = explorador.obtenerRuta() + "\\" + infoArchivo.getNombreArchivo();
             FileOutputStream flujoSalidaArchivo = new FileOutputStream(nombreArchivo);
             
@@ -165,6 +171,7 @@ public class Servidor {
             }
             flujoSalidaArchivo.close();
             System.out.println("Archivo : " + nombreArchivo + " recibido");
+            enviarNotificacion();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (ClassNotFoundException cnfe) {
@@ -182,6 +189,7 @@ public class Servidor {
             }
             flujoSalida.writeObject("finish");
             flujoSalida.flush();
+            recibirNotificacion();
             System.out.println("Enviando instruccion: " + "finish ");
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -192,20 +200,28 @@ public class Servidor {
         if ( archivo.isDirectory() ) {
             flujoSalida.writeObject("mkdirl " + archivo.getName());
             flujoSalida.flush();
+            recibirNotificacion();
+
             System.out.println("Enviando instruccion: " + "mkdirl " + archivo.getName());
             flujoSalida.writeObject("cdl " + archivo.getName());
             flujoSalida.flush();
+            recibirNotificacion();
+
             System.out.println("Enviando instruccion: " + "cdl " + archivo.getName());
+            
             File[] subarchivos = archivo.listFiles();
             for ( int i = 0 ; i < subarchivos.length ; i++ ) {
                 enviarArchivos(subarchivos[i]);
             }
+
             flujoSalida.writeObject("cdl ..");
             flujoSalida.flush();
+            recibirNotificacion();
             System.out.println("Enviando instruccion: " + "cdl ..");
         } else {
             flujoSalida.writeObject("rcv");
             flujoSalida.flush();
+            recibirNotificacion();
             System.out.println("Enviando instruccion: " + "rcv");
             enviarArchivo(archivo);
         }
@@ -224,6 +240,7 @@ public class Servidor {
             // Enviamos la metainformación del archivo
             flujoSalida.writeObject(infoArchivo);
             flujoSalida.flush();
+            recibirNotificacion();
             // Proceso de transferencia del archivo
             DataOutputStream flujoDatosSalida = new DataOutputStream(socketCliente.getOutputStream());
             byte[] buffer = new byte[1500];
@@ -240,11 +257,28 @@ public class Servidor {
             }
             flujoEntradaArchivo.close();
             System.out.println("Archivo : " + archivo.getAbsolutePath() + " enviado");
-            Thread.sleep(100);
+            recibirNotificacion();
         } catch(IOException ioe) {
             ioe.printStackTrace();
-        } catch ( InterruptedException ie ) {
-            ie.printStackTrace();
+        }
+    }
+
+    public void enviarNotificacion () {
+        try {
+            flujoSalida.writeObject("ok");
+            flujoSalida.flush();
+        } catch ( IOException io ) {
+            io.printStackTrace();
+        }
+    }
+
+    public void recibirNotificacion () {
+        try {
+            String mensaje = (String)flujoEntrada.readObject();
+        } catch ( IOException io ) {
+            io.printStackTrace();
+        } catch ( ClassNotFoundException cnfe ) {
+            cnfe.printStackTrace();
         }
     }
     
