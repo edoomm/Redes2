@@ -59,7 +59,7 @@ public class EjecutorDeComandos {
                 return "Files Succesfully Received" + "\n";
             case "rml":
                 explorador.removerArchivo(instruccion.getArgumento(0));
-                return "Archivo eliminado";
+                return "File Removed\n";
             case "rms":
                 cliente.enviarInstruccion(instruccion);
                 cliente.recibirNotificacion();
