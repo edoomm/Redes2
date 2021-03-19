@@ -37,7 +37,7 @@ public class Cliente {
             int opcion = -1;
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-            System.out.println("Escoja su temática:\n----------\n0) Redes\n1) Geografia\n2) Mascotas");
+            System.out.println("Escoja su temática:\n----------\n0) Redes\n1) Geografia\n2) Animales");
             System.out.print("Opcion: ");
             while (opcion < 0 || opcion > 2) {
                 opcion = scanner.nextInt();
