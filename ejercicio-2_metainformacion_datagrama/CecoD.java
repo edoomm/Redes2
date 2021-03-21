@@ -130,7 +130,7 @@ public class CecoD {
     }    
     
     public static void main(String[] args){
-        CecoD cliente = new CecoD(1234, "127.0.0.1");
+        CecoD cliente = new CecoD(1234, "localhost");
         cliente.start();
     }
     
