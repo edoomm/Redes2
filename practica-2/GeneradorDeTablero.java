@@ -6,6 +6,7 @@ public class GeneradorDeTablero {
     private String      tematica;
     private String[]    palabras;
     private char[][]    tablero;
+    private int         numeroPalabras;
 
     // Tamaño del tablero
     private static final int T = 16;
@@ -21,6 +22,7 @@ public class GeneradorDeTablero {
         this.tematica = tematica;
         this.palabras = palabras;
         this.tablero = new char[T][T];
+        this.numeroPalabras = 0;
     }
     
     /**
@@ -30,11 +32,11 @@ public class GeneradorDeTablero {
         // Acomodamos todas las palabras en el tablero
         for ( String palabra : palabras ) {
             acomodarPalabra(palabra);
-            Tablero tablero = new Tablero(tematica, palabras, this.tablero);
+            Tablero tablero = new Tablero(tematica, palabras, this.tablero, numeroPalabras);
             System.out.println(tablero);
         }
         rellenarPosicionesFaltantes();
-        return new Tablero(tematica, palabras, tablero);
+        return new Tablero(tematica, palabras, tablero, numeroPalabras);
     }
     
     /**
@@ -49,6 +51,7 @@ public class GeneradorDeTablero {
             posiciones.remove(0);
             for ( Posicion direccion : DIRECCIONES ) {
                 if ( escribirPalabra(palabra, actual, direccion) ) {
+                    numeroPalabras++;
                     return;
                 }
             }
