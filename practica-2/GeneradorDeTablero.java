@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
@@ -12,8 +13,8 @@ public class GeneradorDeTablero {
     private static final int T = 16;
     // Especificadas como [fila, columna]
     private static final Posicion[] DIRECCIONES = {
-        new Posicion(-1,  0), new Posicion(-1,  1), // arriba, arriba-derecha
         new Posicion( 0,  1), new Posicion( 1,  1), // derecha, derecha-abajo
+        new Posicion(-1,  0), new Posicion(-1,  1), // arriba, arriba-derecha
         new Posicion( 1,  0), new Posicion( 1, -1), // abajo, abajo-izquierda
         new Posicion( 0, -1), new Posicion(-1, -1)  // izquierda, izquierda arriba
     };
@@ -47,13 +48,20 @@ public class GeneradorDeTablero {
         ArrayList<Posicion> posiciones = generarPosicionesTablero();
         while ( !posiciones.isEmpty() ) {
             Collections.shuffle(posiciones);
-            Posicion actual = posiciones.get(0);
+            Posicion posicion = posiciones.get(0);
             posiciones.remove(0);
-            for ( Posicion direccion : DIRECCIONES ) {
-                if ( escribirPalabra(palabra, actual, direccion) ) {
+            ArrayList<Posicion> direcciones = new ArrayList<>(Arrays.asList(DIRECCIONES));
+            while ( !direcciones.isEmpty() ) {
+                Collections.shuffle(direcciones);
+                Posicion direccion = direcciones.get(0);
+                direcciones.remove(0);
+                if ( escribirPalabra(palabra, posicion, direccion) ) {
                     numeroPalabras++;
                     return;
                 }
+            }
+            for ( Posicion direccion : DIRECCIONES ) {
+                
             }
         }
         
