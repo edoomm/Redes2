@@ -6,6 +6,7 @@ import java.util.List;
 import java.io.DataInputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /**
  * Clase que recibirá clientes y escogerá y mandará un objeto de tipo Tablero 
@@ -18,15 +19,12 @@ public class Servidor {
     private ObjectOutputStream  oos;
     private ObjectInputStream   ois;
     private int                 tematica;
-    private final String[]      tematicas = {"Redes", "Geografia", "Animales"};
+    private final String[]      tematicas = {"Redes", "Geografia", "Mascotas"};
     private final String[][]    palabrasTematicas = {
-        {"PROTOCOLO", "INTERNET", "PODCAST", "BROADCAST", "FACEBOOK", "CHAT", "CONEXION", "EXTRANET", "INFRANET", "WAN", 
-        "WWW", "ARP", "OSPF", "UNICAST", "DHCP", "PAQUETE", "ETHERNET", "SERVIDOR", "CLIENTE", "SOCKET"},
-        {"ISRAEL", "NIGERIA", "ITALIA", "ARGENTINA", "PERU", "TURQUIA", "LAOS", "AUSTRALIA", "MEXICO", "RUMANIA",
-        "COAHUILA", "ZACATECAS", "CHIHUAHUA", "SINALOA", "CAMPECHE", "COLIMA", "VERACRUZ", "CDMX", "PUEBLA", "GUERRERO"},
-        {"PERRO", "GATO", "CABALLO", "IGUANA", "PANDA", "LEON", "LOBO", "VACA", "TORO", "PEZ", 
-        "COLIBRI", "CACATUA", "RINOCERONTE", "ELEFANTE", "ZOPILOTE", "MAPACHE", "MOSCA", "NUTRIA", "OCELOTE", "AVESTRUZ"}
-    };
+                                                      {"Protocolos", "Internet", "Topologia", "Ethernet", "Checksum", "Paquete", "Encabezado"}, // Redes
+                                                      {"Relieve", "Altitud", "Clima", "Acantilado", "Meseta", "Hidrografía", "Archipielago"}, // Geografía
+                                                      {"Hamster", "Aves", "Peces", "Gato", "Serpiente", "Perro", "Tortuga", "Conejo"}  // Mascotas 
+                                                      };
 
     private void cerrarFlujos() {
         try {
@@ -45,6 +43,7 @@ public class Servidor {
             DataInputStream dis = new DataInputStream(cli.getInputStream());
             System.out.println("Esperando temática que escogerá el usuario...");
             tematica = dis.readInt();
+            if ( tematica == -1 ) return;
             System.out.println("Temática escogida: " + tematicas[tematica]);
         } catch (Exception e) {
             System.out.println("Error al obtener tematica");
@@ -79,19 +78,25 @@ public class Servidor {
     }
 
     private void iniciarJuego() {
-        obtenerTematica();
         try {
-            String tematica = this.tematicas[this.tematica];
-            String[] palabras = obtenerSubArregloAleatorio(palabrasTematicas[this.tematica], 15);
-
-            // TODO: Acá irá la construcción del objeto tablero, será algo así como
-            // new Tablero(tematica, palabras)
-
-            cerrarFlujos();
+            while ( true ) {
+                obtenerTematica();
+                if ( tematica == -1 ) break;
+                enviarTablero();
+            }
+            //cerrarFlujos();
         } catch (Exception e) {
             System.out.println("Error al iniciar juego");
             e.printStackTrace();
         }
+    }
+    
+    private void enviarTablero() throws IOException {
+        GeneradorDeTablero generador = new GeneradorDeTablero(tematicas[tematica], palabrasTematicas[tematica]);
+        Tablero tablero = generador.generarTablero();
+        System.out.println("Enviado tablero: ");
+        System.out.println(tablero);
+        oos.writeObject(tablero);
     }
 
     private void iniciar() {
@@ -103,7 +108,7 @@ public class Servidor {
             cli = serv.accept();
             ois = new ObjectInputStream(cli.getInputStream());
             oos = new ObjectOutputStream(cli.getOutputStream());
-
+            
             iniciarJuego();
         } catch (Exception e) {
             System.out.println("Error al iniciar clase Servidor");
