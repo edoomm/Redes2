@@ -22,7 +22,7 @@ public class Servidor {
     private final String[]      tematicas = {"Redes", "Geografia", "Mascotas"};
     private final String[][]    palabrasTematicas = {
                                                       {"Protocolos", "Internet", "Topologia", "Ethernet", "Checksum", "Paquete", "Encabezado"}, // Redes
-                                                      {"Relieve", "Altitud", "Clima", "Acantilado", "Meseta", "Hidrografía", "Archipielago"}, // Geografía
+                                                      {"Relieve", /*"Altitud", "Clima", "Acantilado", "Meseta", "Hidrografía", "Archipielago"*/}, // Geografía
                                                       {"Hamster", "Aves", "Peces", "Gato", "Serpiente", "Perro", "Tortuga", "Conejo"}  // Mascotas 
                                                       };
 

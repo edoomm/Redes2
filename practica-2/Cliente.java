@@ -10,6 +10,7 @@ public class Cliente {
     private ObjectOutputStream  oStream;
     private Scanner             scanner;
     private boolean             jugando;
+    private Cronometro          cronometro;
 
     // Constructor
     public Cliente() {
@@ -17,6 +18,7 @@ public class Cliente {
         oStream = null;
         scanner = new Scanner(System.in);
         jugando = true;
+        cronometro = new Cronometro();
     }
 
     // Métodos
@@ -65,6 +67,7 @@ public class Cliente {
                 elegirTematica();
                 Tablero tablero = (Tablero)iStream.readObject();
                 while ( true ) {
+                    cronometro.iniciar();
                     System.out.println(tablero);
                     System.out.println("Ingresa fila y columna de inicio");
                     Posicion inicio = leerPosicion();
@@ -76,6 +79,10 @@ public class Cliente {
                             System.out.println("Yuju! \nDescubriste una palabra!\nRestan: " + tablero.palabrasFaltantes() + " palabras");
                         else {
                             System.out.println("Felicidades! \nGanaste!");
+                            cronometro.detener();
+                            System.out.println("Tu tiempo: " + cronometro.getHorasTranscurridas() + " hrs. " + 
+                                    cronometro.getMinutosTranscurridos() + " mins. " + cronometro.getSegundosTranscurridos() + " segs.");
+                            cronometro.reiniciar();
                             break;
                         }
                     } else {
