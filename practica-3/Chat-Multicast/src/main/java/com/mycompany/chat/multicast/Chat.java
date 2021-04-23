@@ -7,6 +7,8 @@ package com.mycompany.chat.multicast;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -23,6 +25,18 @@ public class Chat extends javax.swing.JFrame {
         initComponents();
     }
 
+    /**
+     * Changes the enabled property of a button based on a JTextField text, whether is empty or not
+     * @param txt   The JTextField where the text will be retrieved
+     * @param btn   The JButton that will be enabled or disabled
+     */
+    private void changeButtonEnabled(JTextField txt, JButton btn) {
+        if (!txt.getText().isEmpty())
+            btn.setEnabled(true);
+        else
+            btn.setEnabled(false);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -48,11 +62,23 @@ public class Chat extends javax.swing.JFrame {
 
         lblMessage.setText("Message : ");
 
+        txtMessage.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtMessageKeyReleased(evt);
+            }
+        });
+
         btnSend.setText("Send Message ");
         btnSend.setEnabled(false);
 
         btnLogin.setText("Login");
         btnLogin.setEnabled(false);
+
+        txtUsername.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtUsernameKeyReleased(evt);
+            }
+        });
 
         lblUsername.setText("Username :");
 
@@ -120,6 +146,14 @@ public class Chat extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void txtUsernameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtUsernameKeyReleased
+        changeButtonEnabled(txtUsername, btnLogin);
+    }//GEN-LAST:event_txtUsernameKeyReleased
+
+    private void txtMessageKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMessageKeyReleased
+        changeButtonEnabled(txtMessage, btnSend);
+    }//GEN-LAST:event_txtMessageKeyReleased
 
     /**
      * @param args the command line arguments
