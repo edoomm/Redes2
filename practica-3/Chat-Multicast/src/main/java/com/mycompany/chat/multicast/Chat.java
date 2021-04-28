@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -21,7 +22,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author Donaldo
  */
 public class Chat extends javax.swing.JFrame {
-    private DefaultListModel listModel;
+    private volatile DefaultListModel listModel;
     private MessageHandler messageHandler;
     
     public Chat() {
@@ -56,6 +57,7 @@ public class Chat extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jRadioButton1 = new javax.swing.JRadioButton();
         lblMessage = new javax.swing.JLabel();
         txtMessage = new javax.swing.JTextField();
         btnSend = new javax.swing.JButton();
@@ -66,6 +68,10 @@ public class Chat extends javax.swing.JFrame {
         txtChat = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstUsers = new javax.swing.JList<>();
+        jLabel1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+
+        jRadioButton1.setText("jRadioButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -114,13 +120,17 @@ public class Chat extends javax.swing.JFrame {
         txtChat.setFocusable(false);
         jScrollPane1.setViewportView(txtChat);
 
-        lstUsers.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Juan", "Pedro", " " };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
         lstUsers.setFocusable(false);
         jScrollPane2.setViewportView(lstUsers);
+
+        jLabel1.setText("Online users");
+
+        jButton1.setText("Refresh");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -132,10 +142,14 @@ public class Chat extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblUsername)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                        .addComponent(txtUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(318, 318, 318))
+                        .addGap(242, 242, 242)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(29, 29, 29))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lblMessage)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -152,12 +166,20 @@ public class Chat extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblUsername)
-                    .addComponent(btnLogin))
-                .addGap(15, 15, 15)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblUsername)
+                            .addComponent(btnLogin))
+                        .addGap(15, 15, 15))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane2)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
@@ -181,19 +203,26 @@ public class Chat extends javax.swing.JFrame {
     }//GEN-LAST:event_txtMessageKeyReleased
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        JOptionPane.showMessageDialog(rootPane, "Mandar mensaje de logout al chat");
-        // TODO add your handling code here:
+        String user = txtUsername.getText();
+        messageHandler.send(user, "", MessageType.LEAVE);
     }//GEN-LAST:event_formWindowClosing
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        JOptionPane.showMessageDialog(rootPane, "Hacer login de usuario, mandar mensaje a todos y añadirlo a la JList y deshabilitar txtUserName y btnLogin");
-        // TODO add your handling code here:
+        String user = txtUsername.getText();
+        messageHandler.setUserName(user);
+        messageHandler.send(user, "", MessageType.JOIN);
     }//GEN-LAST:event_btnLoginActionPerformed
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
-        JOptionPane.showMessageDialog(rootPane, "Mandar mensaje a todos y dar focus a txtMessage para seguir mandando mensajes");
-        // TODO add your handling code here:
+        String user = txtUsername.getText();
+        String message = txtMessage.getText();
+        messageHandler.send(user, message, MessageType.SEND);
+        txtMessage.setText("");
     }//GEN-LAST:event_btnSendActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        lstUsers.updateUI();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -221,6 +250,9 @@ public class Chat extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton btnLogin;
     public javax.swing.JButton btnSend;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblMessage;

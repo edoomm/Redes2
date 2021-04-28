@@ -15,7 +15,7 @@ import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListModel;
 
-public class Receiver extends Thread {
+public class MonitorReceiver extends Thread {
     
     private MulticastSocket socket;
     private JTextArea chatText;
@@ -23,25 +23,13 @@ public class Receiver extends Thread {
     private String user;
     
 
-    public Receiver( MulticastSocket ms, JTextArea textArea, DefaultListModel users ) throws IOException {
-        socket = ms;
+    public MonitorReceiver( JTextArea textArea, DefaultListModel users ) throws IOException {
+        socket = new MulticastSocket(MessageHandler.PORT);
+        socket.joinGroup(InetAddress.getByName(MessageHandler.GROUP_ADDRESS));
         chatText = textArea;
         usersList = users;
     }
     
-    public void sendMessage(Message message) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(message);
-            oos.flush();
-            byte[] messageBytes = bos.toByteArray();
-            DatagramPacket messagePacket = new DatagramPacket(messageBytes, messageBytes.length, InetAddress.getByName(MessageHandler.GROUP_ADDRESS), MessageHandler.PORT);
-            socket.send(messagePacket);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
     
     @Override
     public void run() {
@@ -53,38 +41,36 @@ public class Receiver extends Thread {
                 byte [] receivedData = recv.getData();
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(receivedData));
                 Message message = (Message)ois.readObject();
-                int newUserIndex = 0;
+                int newUserIndex = -1;
                 switch ( message.getType() ) {
                     case LEAVE:
-                        int userIndex = usersList.lastIndexOf(message.getUser());
-                        usersList.remove(userIndex);
-                        chatText.append(message.getUser() + " se ha ido.\n");
+                        try {
+                            int userIndex = usersList.lastIndexOf(message.getUser());
+                            usersList.remove(userIndex);
+                            chatText.append(message.getUser() + " se ha ido.\n");
+                        } catch (ArrayIndexOutOfBoundsException aobe) {
+                            System.out.println("El usuario no está en la lista");
+                        }
                     break;
                     case JOIN:
                         newUserIndex = usersList.indexOf(message.getUser());
                         if ( newUserIndex == -1 ) {
-                            usersList.addElement(message.getUser());
-                            chatText.append(message.getUser() + " se ha unido.\n");
+                            usersList.addElement(recv.getAddress() + "/" + recv.getPort() + "::" + message.getUser());
                         }
-                        if ( !user.equals(message.getUser()) )
-                            sendMessage(new Message(user, "", MessageType.NOTIFY));
                     break;
                     case SEND:
-                        chatText.append(message.getUser() + ": " + message.getMessageBody() + "\n");
+                        //chatText.append(message.getUser() + ": " + message.getMessageBody() + "\n");
                     break;
                     case NOTIFY:
                         newUserIndex = usersList.indexOf(message.getUser());
                         if ( newUserIndex == -1 ) {
-                            System.out.println("Agregando a " + message.getUser());
                             usersList.addElement(message.getUser());
-                        } else {
-                            System.out.println("Usuario " + message.getUser() + " ya agregado");
                         }
                     break;
                     default:
                         System.out.println("Mensaje desconocido");
                 }
-                //System.out.println(message.getType() + "-" + message.getUser() + ": " + message.getMessageBody());
+                chatText.append(recv.getAddress() + "/" + recv.getPort() + ":: " + message.getUser() + " :: " + message.getType() + " :: " + message.getMessageBody());
             }
         } catch ( ClassNotFoundException cnfe ) {
             cnfe.printStackTrace();

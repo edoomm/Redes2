@@ -9,7 +9,7 @@ import java.io.Serializable;
  * SEND: Just sending a message
  */
 enum MessageType {
-    JOIN, LEAVE, SEND
+    JOIN, LEAVE, SEND, NOTIFY, DEFAULT
 }
 
 public class Message implements Serializable {
