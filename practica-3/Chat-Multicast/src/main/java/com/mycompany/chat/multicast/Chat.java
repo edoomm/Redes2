@@ -5,8 +5,11 @@
  */
 package com.mycompany.chat.multicast;
 
+import java.io.IOException;
+import java.net.MulticastSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -18,12 +21,18 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author Donaldo
  */
 public class Chat extends javax.swing.JFrame {
-
-    /**
-     * Creates new form Chat
-     */
+    private DefaultListModel listModel;
+    private MessageHandler messageHandler;
+    
     public Chat() {
-        initComponents();
+        try {
+            initComponents();
+            listModel = new DefaultListModel();
+            lstUsers.setModel(listModel);
+            messageHandler = new MessageHandler( txtChat, listModel );
+        } catch ( IOException ioe ) {
+            ioe.printStackTrace();
+        }
     }
 
     /**
@@ -191,11 +200,6 @@ public class Chat extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         try {
-            /* Set the Nimbus look and feel */
-            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-            * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-            */
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(new Runnable() {
