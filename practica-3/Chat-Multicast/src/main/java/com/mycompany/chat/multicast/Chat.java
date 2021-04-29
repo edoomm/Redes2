@@ -5,6 +5,7 @@
  */
 package com.mycompany.chat.multicast;
 
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.MulticastSocket;
 import java.util.logging.Level;
@@ -84,6 +85,9 @@ public class Chat extends javax.swing.JFrame {
         lblMessage.setText("Message : ");
 
         txtMessage.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtMessageKeyPressed(evt);
+            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtMessageKeyReleased(evt);
             }
@@ -106,6 +110,9 @@ public class Chat extends javax.swing.JFrame {
         });
 
         txtUsername.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtUsernameKeyPressed(evt);
+            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtUsernameKeyReleased(evt);
             }
@@ -211,6 +218,10 @@ public class Chat extends javax.swing.JFrame {
         String user = txtUsername.getText();
         messageHandler.setUserName(user);
         messageHandler.send(user, "", MessageType.JOIN);
+        txtMessage.requestFocus();
+        
+        txtUsername.setEnabled(false);
+        btnLogin.setEnabled(false);
     }//GEN-LAST:event_btnLoginActionPerformed
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
@@ -223,6 +234,16 @@ public class Chat extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         lstUsers.updateUI();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void txtUsernameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtUsernameKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER)
+            btnLogin.doClick();
+    }//GEN-LAST:event_txtUsernameKeyPressed
+
+    private void txtMessageKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMessageKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER)
+            btnSend.doClick();
+    }//GEN-LAST:event_txtMessageKeyPressed
 
     /**
      * @param args the command line arguments
