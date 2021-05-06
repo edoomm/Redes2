@@ -135,6 +135,8 @@ public class ServidorWeb
 			}
 			public void SendA(String arg) 
 			{
+				String fileExtension = getFileExtension(arg);
+
 				try{
 					 int b_leidos=0;
 					 BufferedInputStream bis2=new BufferedInputStream(new FileInputStream(arg));
@@ -155,12 +157,13 @@ public class ServidorWeb
 				sb = sb+"HTTP/1.0 200 ok\n";
 			        sb = sb +"Server: Axel Server/1.0 \n";
 				sb = sb +"Date: " + new Date()+" \n";
-				sb = sb +"Content-Type: text/html \n";
+				sb = sb +"Content-Type: " + MimeTypes.getMimeType(fileExtension) + " \n";
 				sb = sb +"Content-Length: "+tam_archivo+" \n";
 				sb = sb +"\n";
 				bos.write(sb.getBytes());
 				bos.flush();
 
+                                System.out.println(sb);
 				//out.println("HTTP/1.0 200 ok");
 				//out.println("Server: Axel Server/1.0");
 				//out.println("Date: " + new Date());
@@ -186,7 +189,17 @@ public class ServidorWeb
 				}
 				
 			}
+
+			/***
+			 * Obtains the extension file of a given file name
+			 * @param fileName The name of the file to retrieve its extension
+			 * @return The substring that corresponds to the file extension
+			 */
+			private String getFileExtension(String fileName) {
+				return fileName.substring(fileName.indexOf(".") + 1, fileName.length());
+			}
 		}
+
 		public ServidorWeb() throws Exception
 		{
 			System.out.println("Iniciando Servidor.......");
