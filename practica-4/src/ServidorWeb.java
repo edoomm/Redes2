@@ -36,6 +36,7 @@ public class ServidorWeb
 						socket.close();
 						return;
 					}
+					
 					System.out.println("\nCliente Conectado desde: "+socket.getInetAddress());
 					System.out.println("Por el puerto: "+socket.getPort());
 					System.out.println("Datos: "+line+"\r\n\r\n");
@@ -43,7 +44,25 @@ public class ServidorWeb
 					if(line.indexOf("?")==-1)
 					{
 						getArch(line);
-						if(FileName.compareTo("")==0)
+
+						// POST REQUEST
+						if (line.toUpperCase().startsWith("POST")) {
+							requestPost(br);
+						}
+						else if (line.toUpperCase().startsWith("HEAD")) {
+							System.out.println("Solicitud HEAD");
+							BufferedInputStream bis2=new BufferedInputStream(new FileInputStream(FileName));
+							byte[] buf=new byte[1024];
+							int tam_bloque=0;
+							if(bis2.available()>=1024)
+								tam_bloque=1024;
+							else
+								bis2.available();
+					
+							int tam_archivo=bis2.available();
+							sendResponse(getFileExtension(FileName), tam_archivo);
+						}
+						else if(FileName.compareTo("")==0)
 						{
 							SendA("index.htm");
 						}
@@ -51,29 +70,16 @@ public class ServidorWeb
 						{
 							SendA(FileName);
 						}
-						System.out.println(FileName);
-						
-						
+						// if (!FileName.equals(null))
+						// 	System.out.println(FileName);
 					}
 					else if(line.toUpperCase().startsWith("GET"))
 					{
-						StringTokenizer tokens=new StringTokenizer(line,"?");
-						String req_a=tokens.nextToken();
-						String req=tokens.nextToken();
-						System.out.println("Token1: "+req_a+"\r\n\r\n");
-						System.out.println("Token2: "+req+"\r\n\r\n");
-						pw.println("HTTP/1.0 200 Okay");
-						pw.flush();
-						pw.println();
-						pw.flush();
-						pw.print("<html><head><title>SERVIDOR WEB");
-						pw.flush();
-						pw.print("</title></head><body bgcolor=\"#AACCFF\"><center><h1><br>Parametros Obtenidos..</br></h1>");
-						pw.flush();
-						pw.print("<h3><b>"+req+"</b></h3>");
-						pw.flush();
-						pw.print("</center></body></html>");
-						pw.flush();
+						requestGet(line);
+					}
+					else if(line.toUpperCase().startsWith("POST"))
+					{
+						// Creo que este no va
 					}
 					else
 					{
@@ -100,7 +106,7 @@ public class ServidorWeb
 			{
 				int i;
 				int f;
-				if(line.toUpperCase().startsWith("GET"))
+				if(line.toUpperCase().startsWith("GET") || line.toUpperCase().startsWith("HEAD"))
 				{
 					i=line.indexOf("/");
 					f=line.indexOf(" ",i);
@@ -135,61 +141,92 @@ public class ServidorWeb
 			}
 			public void SendA(String arg) 
 			{
-				String fileExtension = getFileExtension(arg);
-
 				try{
-					 int b_leidos=0;
-					 BufferedInputStream bis2=new BufferedInputStream(new FileInputStream(arg));
-                     byte[] buf=new byte[1024];
-                     int tam_bloque=0;
-                     if(bis2.available()>=1024)
-                     {
-                        tam_bloque=1024;
-                     }
-                     else
-                     {
+					int b_leidos=0;
+					BufferedInputStream bis2=new BufferedInputStream(new FileInputStream(arg));
+					byte[] buf=new byte[1024];
+					int tam_bloque=0;
+					if(bis2.available()>=1024)
+						tam_bloque=1024;
+					else
                         bis2.available();
-                     }
 			
-                     int tam_archivo=bis2.available();
-		     /***********************************************/
-				String sb = "";
-				sb = sb+"HTTP/1.0 200 ok\n";
-			        sb = sb +"Server: Axel Server/1.0 \n";
-				sb = sb +"Date: " + new Date()+" \n";
-				sb = sb +"Content-Type: " + MimeTypes.getMimeType(fileExtension) + " \n";
-				sb = sb +"Content-Length: "+tam_archivo+" \n";
-				sb = sb +"\n";
-				bos.write(sb.getBytes());
-				bos.flush();
+					int tam_archivo=bis2.available();
+					String fileExtension = getFileExtension(arg);
+					/***********************************************/
+					sendResponse(fileExtension, tam_archivo);
 
-                                System.out.println(sb);
-				//out.println("HTTP/1.0 200 ok");
-				//out.println("Server: Axel Server/1.0");
-				//out.println("Date: " + new Date());
-				//out.println("Content-Type: text/html");
-				//out.println("Content-Length: " + mifichero.length());
-				//out.println("\n");
+					// System.out.println(sb);
+					//out.println("HTTP/1.0 200 ok");
+					//out.println("Server: Axel Server/1.0");
+					//out.println("Date: " + new Date());
+					//out.println("Content-Type: text/html");
+					//out.println("Content-Length: " + mifichero.length());
+					//out.println("\n");
 
-		     /***********************************************/
-			
-                     while((b_leidos=bis2.read(buf,0,buf.length))!=-1)
-                     {
-                        bos.write(buf,0,b_leidos);
-                        
-                        
-                     }
-                     bos.flush();
-                     bis2.close();
-                     
+					/***********************************************/
+				
+					while((b_leidos=bis2.read(buf,0,buf.length))!=-1)
+						bos.write(buf,0,b_leidos);
+					bos.flush();
+					bis2.close();
 				}
 				catch(Exception e)
 				{
 					System.out.println(e.getMessage());
 				}
-				
 			}
 
+			private void requestGet(String line){
+				StringTokenizer tokens=new StringTokenizer(line,"?");
+				String req_a=tokens.nextToken();
+				String req=tokens.nextToken();
+				System.out.println("Token1: "+req_a+"\r\n\r\n");
+				System.out.println("Token2: "+req+"\r\n\r\n");
+				pw.println("HTTP/1.0 200 Okay");
+				pw.flush();
+				pw.println();
+				pw.flush();
+				pw.print("<html><head><title>SERVIDOR WEB");
+				pw.flush();
+				pw.print("</title></head><body bgcolor=\"#AACCFF\"><center><h1><br>Parametros Obtenidos..</br></h1>");
+				pw.flush();
+				pw.print("<h3><b>"+req+"</b></h3>");
+				pw.flush();
+				pw.print("</center></body></html>");
+				pw.flush();
+			}
+
+			private void requestPost(BufferedReader br) {
+				try {
+					System.out.println("Solicitud POST");
+					//code to read the post payload data
+					StringBuilder payload = new StringBuilder();
+					while(br.ready()){
+						payload.append((char) br.read());
+					}
+					// obtaining parameters
+					String plstr = payload.toString();
+					String lastParameter = "Accept-Language: en-US,en;q=0.9";
+					plstr = plstr.substring(plstr.indexOf(lastParameter) + lastParameter.length() + 4, plstr.length()-1);
+					sendResponse(plstr);
+
+					pw.println("HTTP/1.0 200 Okay");
+					pw.flush();
+					pw.println();
+					pw.flush();
+					pw.print("<html><head><title>POST");
+					pw.flush();
+					pw.print("</title></head><body><center><h1><br>POST realizado</br></h1>");
+					pw.flush();
+					pw.print("</center></body></html>");
+					pw.flush();
+				} catch (Exception e) {
+					System.out.println("Error");
+					e.printStackTrace();
+				}
+			}
+			
 			/***
 			 * Obtains the extension file of a given file name
 			 * @param fileName The name of the file to retrieve its extension
@@ -197,6 +234,51 @@ public class ServidorWeb
 			 */
 			private String getFileExtension(String fileName) {
 				return fileName.substring(fileName.indexOf(".") + 1, fileName.length());
+			}
+			
+			/**
+			 * Sends the HTTP response. This response is used for a GET request
+			 * @param fileExtension The file extension in order to know the MIME Type file
+			 * @param tam_archivo The lenght of the file given in bytes
+			 */
+			private void sendResponse(String fileExtension, int tam_archivo) {
+				try {
+					String sb = "";
+					sb = sb +"HTTP/1.0 200 ok\n";
+					sb = sb +"Server: Axel Server/1.0 \n";
+					sb = sb +"Date: " + new Date()+" \n";
+					sb = sb +"Content-Type: " + MimeTypes.getMimeType(fileExtension) + " \n";
+					sb = sb +"Content-Length: "+tam_archivo+" \n";
+					sb = sb +"\n";
+					bos.write(sb.getBytes());
+					bos.flush();
+
+					System.out.println(sb);
+				} catch (Exception e) {
+					System.out.println("Error");
+					e.printStackTrace();
+				}
+			}
+			/**
+			 * Sends a HTTP response. This is used for POST requests.
+			 * @param payload The payload string where the parameters are 
+			 */
+			private void sendResponse(String payload) {
+				try {
+					String sb = "";
+					sb = sb +"HTTP/1.0 200 ok\n";
+					sb = sb +"Server: Axel Server/1.0 \n";
+					sb = sb +"Date: " + new Date()+" \n";
+					sb = sb +payload+"\n";
+					sb = sb +"\n";
+					// bos.write(sb.getBytes());
+					// bos.flush();
+
+					System.out.println(sb);
+				} catch (Exception e) {
+					System.out.println("Error");
+					e.printStackTrace();
+				}
 			}
 		}
 
