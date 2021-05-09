@@ -30,6 +30,8 @@ public class ServidorWeb {
 
         public void run() {
             try {
+                // Remove for production
+                // Used a delay to show the thread pool behavior
                 sleep(2000);
                 br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 bos = new BufferedOutputStream(socket.getOutputStream());
