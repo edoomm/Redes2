@@ -1,4 +1,11 @@
-{
-	"id":"6",
-	"name": "Donaldo"
-}
+[
+	{
+		"id":"6",
+		"name": "Donaldo"
+	},
+	{
+		"id":"7",
+		"name": "Horacio"
+	}
+]
+	

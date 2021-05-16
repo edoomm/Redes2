@@ -89,7 +89,7 @@ public class ServidorWeb {
                         int tam_archivo = bis2.available();
                         sendResponse(getFileExtension(FileName), tam_archivo);
                     } else if (FileName.compareTo("") == 0) {
-                        SendA("index.htm");
+                        SendA("index.html");
                     } else {
                         SendA(FileName);
                     }
@@ -225,6 +225,11 @@ public class ServidorWeb {
                 String lastParameter = "Accept-Language: en-US,en;q=0.9";
                 plstr = plstr.substring(plstr.indexOf(lastParameter) + lastParameter.length() + 4, plstr.length() - 1);
                 sendResponse(plstr);
+                
+                String payloadString = payload.toString();
+                // Parameters are after two consecutive '\r\n'
+                String parametersString = payloadString.split("\r\n\r\n")[1];
+                String[] parameters = parametersString.split("\n");
 
                 pw.println("HTTP/1.0 200 Okay");
                 pw.flush();
@@ -234,6 +239,10 @@ public class ServidorWeb {
                 pw.flush();
                 pw.print("</title></head><body><center><h1><br>POST realizado</br></h1>");
                 pw.flush();
+                for ( String paramater : parameters ) {
+                    pw.print("<h3>"+ paramater +"</h3>");
+                    pw.flush();
+                }
                 pw.print("</center></body></html>");
                 pw.flush();
             } catch (Exception e) {
