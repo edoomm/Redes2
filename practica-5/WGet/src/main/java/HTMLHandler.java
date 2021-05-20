@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -37,7 +39,7 @@ public class HTMLHandler {
         try {
             String documentContent = getDocumentContent(file);
             System.out.println(documentContent);
-            tags = getResources(documentContent);
+            tags = Stream.concat(getResources(documentContent, "href").stream(), getResources(documentContent, "src").stream()).collect(Collectors.toList());
         } catch (FileNotFoundException fnfe) {
             System.err.println("Exception ocurred because the file couldn't be found");
             fnfe.printStackTrace();
@@ -57,12 +59,11 @@ public class HTMLHandler {
      * @param content   The document to analyze
      * @return          A list of all names of the resources
      */
-    private static List<String> getResources(String content) {
+    private static List<String> getResources(String content, String target) {
         List<String> resources = new ArrayList<String>();
-        String href = "href";
 
         // first index of the first href
-        int index = content.indexOf(href);
+        int index = content.indexOf(target);
         while (index >= 0) {
             // sets start and end indexes
             int start = content.indexOf("\"", index + 1) + 1;
@@ -70,7 +71,7 @@ public class HTMLHandler {
             // getting the name of the resource
             resources.add(content.substring(start, end));
             // updating index in order to look for the next resource
-            index = content.indexOf(href, end + 1);
+            index = content.indexOf(target, end + 1);
         }
 
         return resources;
