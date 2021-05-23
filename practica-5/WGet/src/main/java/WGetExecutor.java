@@ -8,16 +8,14 @@ import java.util.List;
 
 public class WGetExecutor {
     public static void main(String[] args) {
+        
         List<String> resourcesToDownload;
         try {
-            resourcesToDownload = HTMLHandler.getTagsContent(new File("index.html"));
-            System.out.println(resourcesToDownload.toString());
-        } catch (IOException ioe) {
+            WGet wget = new WGet("http://148.204.58.221/axel/aplicaciones/sockets/java/");
+            wget.start();
+        } catch (Exception ioe) {
             System.err.println("Exception ocurred while trying to retrieve the input or output");
             ioe.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Exception ocurred");
-            e.printStackTrace();
         }
     }
 }
