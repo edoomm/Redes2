@@ -17,7 +17,8 @@ import java.util.stream.Stream;
 */
 public class HTMLHandler {
 
-    public static String getDocumentContent( File file ) throws FileNotFoundException, IOException {
+    private static String getDocumentContent( String fileName ) throws FileNotFoundException, IOException {
+        File file = new File(fileName);
         BufferedReader fileReader = new BufferedReader(new FileReader(file));
         String fileContent = "";
         String readLine;
@@ -33,13 +34,15 @@ public class HTMLHandler {
      * @return              The resources that should be downloaded
      * @throws  IOException
      */
-    public static List<String> getTagsContent(File file) throws IOException {
+    public static List<String> getTagsContent(String fileName) throws IOException {
         List<String> tags = null;
-
+        String filePath = fileName.substring(0, fileName.lastIndexOf("/") + 1);
         try {
-            String documentContent = getDocumentContent(file);
-            System.out.println(documentContent);
-            tags = Stream.concat(getResources(documentContent, "href").stream(), getResources(documentContent, "src").stream()).collect(Collectors.toList());
+            String documentContent = getDocumentContent(fileName);
+            tags = Stream.concat(
+                    getResources(documentContent, "href", filePath).stream(), 
+                    getResources(documentContent, "src", filePath).stream())
+                    .collect(Collectors.toList());
         } catch (FileNotFoundException fnfe) {
             System.err.println("Exception ocurred because the file couldn't be found");
             fnfe.printStackTrace();
@@ -59,9 +62,8 @@ public class HTMLHandler {
      * @param content   The document to analyze
      * @return          A list of all names of the resources
      */
-    private static List<String> getResources(String content, String target) {
+    private static List<String> getResources(String content, String target, String filePath) {
         List<String> resources = new ArrayList<String>();
-
         // first index of the first href
         int index = content.indexOf(target);
         while (index >= 0) {
@@ -69,7 +71,13 @@ public class HTMLHandler {
             int start = content.indexOf("\"", index + 1) + 1;
             int end = content.indexOf("\"", start + 1);
             // getting the name of the resource
-            resources.add(content.substring(start, end));
+            String resourceName = content.substring(start, end);
+            if (!resourceName.contains("/"))
+                resources.add(filePath + resourceName);
+            else if (resourceName.charAt(0) == '/')
+                resources.add(filePath.substring(0, filePath.indexOf("/") + 1) + content.substring(start + 1, end));
+            else 
+                resources.add(filePath + resourceName);
             // updating index in order to look for the next resource
             index = content.indexOf(target, end + 1);
         }
