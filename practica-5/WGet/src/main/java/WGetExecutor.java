@@ -11,7 +11,7 @@ public class WGetExecutor {
         
         List<String> resourcesToDownload;
         try {
-            WGet wget = new WGet("http://148.204.58.221/axel/aplicaciones/sockets/java/");
+            WGet wget = new WGet("http://148.204.58.221/axel/aplicaciones/");
             wget.start();
         } catch (Exception ioe) {
             System.err.println("Exception ocurred while trying to retrieve the input or output");

@@ -1,6 +1,7 @@
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 
 
 public class FileExplorerUtilities {
@@ -9,7 +10,8 @@ public class FileExplorerUtilities {
         return file.exists();
     }
     
-    public static void createFilePath(File file) {
+    public static void createFilePath(File file) throws IOException {
+        System.out.println("Creando path: " + file.getCanonicalPath());
         if (file.getParentFile() != null)
             file.getParentFile().mkdirs();
     }

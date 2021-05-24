@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 public class WGet {
     
-    private static final int POOL_SIZE = 4;
+    private static final int POOL_SIZE = 6;
     
     private URL url;
     private Queue<String> resourcesToDownload;
@@ -41,7 +41,7 @@ public class WGet {
     private String rootURL;
     private String protocol;
     
-    public WGet (String initialURL) throws MalformedURLException{
+    public WGet (String initialURL) throws Exception {
         exploredResources = new HashSet<String>();
         downloadedResources = new HashSet<String>();
         resourcesToDownload = new LinkedBlockingQueue<String>();
@@ -216,26 +216,23 @@ public class WGet {
                     }
                 }
             } catch (IOException ioe) {
-                System.out.println("Error whlie getting a resource");
+                System.out.println("Error while getting a resource");
             }finally {
                 resourcesToDownloadLock.unlock();
             }
             resourcesToExploreLock.lock();
             try {
                 if ( !resourcesToExplore.isEmpty() ) {
-                    threadPool.execute(new HTMLResourceExplorerThread(retrieveResourceToExplore()));
-                    increaseRunningThreads();
+                    String next = retrieveResourceToExplore();
+                    if ( !isResourceExplored(next) ) {
+                        threadPool.execute(new HTMLResourceExplorerThread(next));
+                        increaseRunningThreads();
+                    }
                 }
             } finally {
                 resourcesToExploreLock.unlock();
             }
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } while (!resourcesToDownload.isEmpty() || !resourcesToExplore.isEmpty() || runningThreads > 0);
-        threadPool.shutdownNow();
+        } while (true);
     }
     
     class ResourceDownloaderThread extends Thread {
@@ -253,7 +250,7 @@ public class WGet {
                 fileName = "index.html";
             
             this.resourceName = rootURL + url.getPath() + fileName;
-            System.out.println(this.resourceName);
+            System.out.println("Resource name: " + this.resourceName);
             FileExplorerUtilities.createFilePath(new File(this.resourceName));
             this.fileOutputStream = new FileOutputStream(this.resourceName);
             
