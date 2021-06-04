@@ -34,7 +34,6 @@ public class GeneradorDeTablero {
         for ( String palabra : palabras ) {
             acomodarPalabra(palabra);
             Tablero tablero = new Tablero(tematica, palabras, this.tablero, numeroPalabras);
-            System.out.println(tablero);
         }
         rellenarPosicionesFaltantes();
         return new Tablero(tematica, palabras, tablero, numeroPalabras);
