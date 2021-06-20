@@ -7,13 +7,12 @@ public class MulticastServerTest {
     public static void main(String[] args) {
         try {
             MulticastServer multicastServer = 
-                    new MulticastServer(new RMIInformation("Placeholder", 1234));
+                    new MulticastServer(new RMIInformation("Hola", 1234));
             
             multicastServer.start();
             
             
-            MulticastClient multicastClient = 
-                    new MulticastClient();
+            MulticastClient multicastClient = new MulticastClient();
             
             multicastClient.start();
         } catch (IOException ioe) {

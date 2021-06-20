@@ -8,13 +8,8 @@ import java.rmi.registry.Registry;
 import java.util.List;
 
 public class ResourceLocatorRegistryClient {
-    private Registry registry;
-    
-    public ResourceLocatorRegistryClient (String host, int port) throws RemoteException {
-        registry = LocateRegistry.getRegistry(host, port);
-    }
-    
-    public List<FileInformation> lookForFiles(String fileName) throws NotBoundException, RemoteException {
+    public static List<FileInformation> lookForFiles(String fileName, String host, int port) throws NotBoundException, RemoteException {
+        Registry registry = LocateRegistry.getRegistry(host, port);
         IResourceLocator resourceLocator = (IResourceLocator) registry.lookup("IResourceLocator");
         return resourceLocator.lookForFilesInformation(fileName);
     }

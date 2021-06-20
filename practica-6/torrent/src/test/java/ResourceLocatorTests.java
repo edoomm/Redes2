@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 
 
-public class ResourceLocatorServerTests {
+public class ResourceLocatorTests {
     public static void main(String[] args) {
         try {
             ResourceLocatorRegistryServer rlrs = 

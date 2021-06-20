@@ -44,7 +44,7 @@ public class MulticastServer implements Runnable {
     public void run() {
         try {
             while(true){
-                System.out.println("Sending info");
+                //System.out.println("Sending info");
                 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(bos);

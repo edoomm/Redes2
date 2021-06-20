@@ -1,6 +1,7 @@
 
 import InformationObjects.FileInformation;
 import RMIRegistry.ResourceLocatorRegistryClient;
+import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -8,10 +9,8 @@ import java.util.List;
 public class ResourceLocatorClientTests {
     public static void main(String[] args) {
         try {
-            ResourceLocatorRegistryClient rlrc = 
-                new ResourceLocatorRegistryClient("127.0.0.1", 1099);
-            
-            List<FileInformation> foundFiles = rlrc.lookForFiles("file.txt");
+            List<FileInformation> foundFiles = 
+                    ResourceLocatorRegistryClient.lookForFiles("file.txt", "127.0.0.1", 1202);
             
             for (FileInformation fileInformation : foundFiles) {
                 System.out.println(fileInformation);
@@ -20,6 +19,8 @@ public class ResourceLocatorClientTests {
             re.printStackTrace();
         } catch (NotBoundException nbe) {
             nbe.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

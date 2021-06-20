@@ -1,14 +1,15 @@
 package InformationObjects;
 
+import java.io.File;
 import java.io.Serializable;
 
-public class FileInformation implements Serializable {
+public class FileInformation implements Serializable, Comparable<FileInformation> {
     private String serverIpAddress;
-    private String fileName;
+    private File fileName;
     private String checksum;
     private int serverPort;
 
-    public FileInformation(String serverIpAddress, String fileName, String checksum, int serverPort) {
+    public FileInformation(String serverIpAddress, File fileName, String checksum, int serverPort) {
         this.serverIpAddress = serverIpAddress;
         this.fileName = fileName;
         this.checksum = checksum;
@@ -23,11 +24,11 @@ public class FileInformation implements Serializable {
         this.serverIpAddress = serverIpAddress;
     }
 
-    public String getFileName() {
+    public File getFile() {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
+    public void setFile(File fileName) {
         this.fileName = fileName;
     }
 
@@ -52,6 +53,26 @@ public class FileInformation implements Serializable {
         return "FileInformation{" + "serverIpAddress=" + serverIpAddress 
                 + ", fileName=" + fileName + ", checksum=" + checksum 
                 + ", serverPort=" + serverPort + '}';
+    }
+
+    @Override
+    public int compareTo(FileInformation o) {
+        int result;
+        result = serverIpAddress.compareTo(o.serverIpAddress);
+        if (result != 0)
+            return result;
+        
+        result = fileName.compareTo(o.fileName);
+        if (result != 0)
+            return result;
+        
+        result = checksum.compareTo(o.checksum);
+        if (result != 0)
+            return result;
+        
+        result = serverPort - o.serverPort;
+        
+        return result;
     }
     
     

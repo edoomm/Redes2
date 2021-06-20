@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,8 +35,8 @@ public class MulticastClient implements Runnable {
         running = false;
     }
     
-    public Set<RMIInformation> getRmiServers() {
-        return rmiServers;
+    public List<RMIInformation> getRmiServers() {
+        return new ArrayList<RMIInformation>(rmiServers);
     }
     
     @Override
@@ -50,9 +52,9 @@ public class MulticastClient implements Runnable {
                 
                 rmiServers.add(rmiInformation);
                 
-                System.out.println("Elements in the tree: " + rmiServers.size());
+                //System.out.println("Elements in the tree: " + rmiServers.size());
                 
-                System.out.println("Received RMI info. : " + rmiInformation);
+                //System.out.println("Received RMI info. : " + rmiInformation);
             }
         } catch(IOException ioe) {
             ioe.printStackTrace();

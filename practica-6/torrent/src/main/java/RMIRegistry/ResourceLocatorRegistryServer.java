@@ -16,12 +16,14 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
     
     public ResourceLocatorRegistryServer(String directory, String host, int port) {
         rootDirectory = directory;
+        this.host = host;
+        this.port = port;
     }
     
     public void initializeRMIServer() {
         try {
-            LocateRegistry.createRegistry(1099); 
-            System.out.println("RMI registry ready.");
+            LocateRegistry.createRegistry(port);
+            //System.out.println("RMI registry ready.");
         } catch (Exception e) {
             System.out.println("Exception starting RMI registry:");
             e.printStackTrace();
@@ -40,19 +42,19 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
             
 	    ResourceLocatorRegistryServer resourceLocator = 
                 new ResourceLocatorRegistryServer(
-                    "C:\\Users\\Donaldo\\Desktop\\ServerDirectory\\",
+                    rootDirectory,
                     host,
                     port
                 );
 	    
             IResourceLocator stub = 
-                (IResourceLocator) UnicastRemoteObject.exportObject(resourceLocator, 0);
+                (IResourceLocator) UnicastRemoteObject.exportObject(resourceLocator, port);
 
 	    // Bind the remote object's stub in the registry
-	    Registry registry = LocateRegistry.getRegistry();
+	    Registry registry = LocateRegistry.getRegistry(port);
 	    registry.bind("IResourceLocator", stub);
 
-	    System.err.println("RMI Server initialized...");
+	    //System.err.println("RMI Server initialized...");
 	} catch (Exception e) {
 	    System.err.println("Server exception: " + e.toString());
 	    e.printStackTrace();
@@ -66,12 +68,17 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
      */
     @Override
     public List<FileInformation> lookForFilesInformation(String fileName) throws RemoteException {
-        List<String> matchingFileNames = getMatchingFileNames(fileName);
+        List<File> matchingFileNames = getMatchingFileNames(fileName);
         List<FileInformation> files = new ArrayList<FileInformation>();
         
         try {
-            for (String filePath : matchingFileNames){
-                files.add(new FileInformation(host, filePath, MD5Checksum.getMD5Checksum(filePath), port));
+            for (File file : matchingFileNames){
+                files.add(
+                    new FileInformation(
+                            host, 
+                            file, 
+                            MD5Checksum.getMD5Checksum(file.getAbsolutePath()), 
+                            port));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,15 +111,15 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
      * with the fileName requested
      * @param fileName 
      */
-    private List<String> getMatchingFileNames(String fileName) {
+    private List<File> getMatchingFileNames(String fileName) {
         List<File> directoryFiles = listFilesInFolder(new File(rootDirectory));
         
-        List<String> matchedFiles = new ArrayList<String>();
+        List<File> matchedFiles = new ArrayList<File>();
         
         for (File file : directoryFiles) {
             //System.out.println(file.getAbsoluteFile());
             if (file.getName().contains(fileName)) {
-                matchedFiles.add(file.getAbsoluteFile().toString());
+                matchedFiles.add(file.getAbsoluteFile());
             }
         }
         
