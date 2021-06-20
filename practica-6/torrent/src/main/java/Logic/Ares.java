@@ -52,6 +52,7 @@ public class Ares {
         resourceLocatorServer.start();
         
         fragmentFileSender = new FragmentFileSender(downloadServerPort);
+        fragmentFileSender.start();
         
         resourceLocatorClient = new ResourceLocatorClient();
     }
@@ -89,6 +90,8 @@ public class Ares {
                     new FragmentedFileDownloader(foundFiles.get(checksum),
                     localRootDirectory);
             fileDownloader.downloadFragments();
+            
+            System.out.println("File downloaded successfully");
         }
     }
 }

@@ -31,7 +31,8 @@ public class FragmentFileSender extends Thread {
             while(active) {
                 System.out.println("Waiting for connections on FragmentFileSender...");
                 clientSocket = serverSocket.accept();
-                new FileSenderThread(clientSocket).start();
+                System.out.println("Connection accepted");
+                (new FileSenderThread(clientSocket)).start();
                 System.out.println("New connection");
             }
         } catch (IOException ioe) {

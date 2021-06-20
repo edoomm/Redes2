@@ -35,7 +35,7 @@ public class FragmentedFileDownloader {
             for (int i = 0 ; i < numberOfFragments ; i++) {
                 file = fileSources.get(i).getFile();
                 Thread downloader = 
-                new FragmentDownoaderThread(
+                new FragmentDownloaderThread(
                     i,
                     i*fileFragmentLength,
                     fileFragmentLength,
@@ -62,7 +62,7 @@ public class FragmentedFileDownloader {
         }
     }
     
-    class FragmentDownoaderThread extends Thread {
+    class FragmentDownloaderThread extends Thread {
         private Socket socket;
         private ObjectOutputStream outputStream;
         private FileInformation fileInformation;
@@ -70,7 +70,7 @@ public class FragmentedFileDownloader {
         private int fragment;
         private long initialPosition;
         
-        public FragmentDownoaderThread(int fragment, long initialPosition, long fragmentSize, FileInformation file) {
+        public FragmentDownloaderThread(int fragment, long initialPosition, long fragmentSize, FileInformation file) {
             String host = file.getServerIpAddress();
             int port = file.getServerPort();
             this.fileInformation = file;
@@ -92,6 +92,7 @@ public class FragmentedFileDownloader {
         public void establishConnection () {
             try {
                 socket = new Socket (fileInformation.getServerIpAddress(), fileInformation.getServerPort());
+                System.out.println("Connection established with FileSender");
                 outputStream = new java.io.ObjectOutputStream(socket.getOutputStream());
             } catch ( IOException ioe ) {
                 ioe.printStackTrace();

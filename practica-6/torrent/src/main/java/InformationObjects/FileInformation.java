@@ -51,7 +51,7 @@ public class FileInformation implements Serializable, Comparable<FileInformation
     @Override
     public String toString() {
         return "FileInformation{" + "serverIpAddress=" + serverIpAddress 
-                + ", fileName=" + fileName + ", checksum=" + checksum 
+                + ", fileName=" + fileName.getName() + ", checksum=" + checksum 
                 + ", serverPort=" + serverPort + '}';
     }
 

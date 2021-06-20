@@ -9,7 +9,7 @@ public class DownloaderTest {
     public static void main(String[] args) {
         FileInformation fi1 = new FileInformation(
             "127.0.0.1",
-            new File("C:\\Users\\Donaldo\\Desktop\\ServerDirectory\\file2.txt"),
+            new File("C:\\Users\\Donaldo\\Desktop\\Server2\\file2.txt"),
             "",
             1234);
         
@@ -24,7 +24,7 @@ public class DownloaderTest {
         
         FragmentedFileDownloader ffd = new FragmentedFileDownloader(
             list,
-            "C:\\Users\\Donaldo\\Desktop\\Server2\\");
+            "C:\\Users\\Donaldo\\Desktop\\Server3\\");
         
         ffd.downloadFragments();
         System.out.println("Finished downloading");
