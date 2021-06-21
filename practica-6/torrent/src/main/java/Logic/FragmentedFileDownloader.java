@@ -38,19 +38,23 @@ public class FragmentedFileDownloader {
     
     public void downloadFragments () {
         File file = null;
+        Thread[] executedThreads = new Thread[numberOfFragments];
         for (int i = 0 ; i < numberOfFragments ; i++) {
             file = fileSources.get(i).getFile();
-            threadPool.execute(
+            Thread downloaderThread = 
                 new FragmentDownloaderThread(
                     i,
                     i*fileFragmentLength,
                     fileFragmentLength,
-                    fileSources.get(i))
-            );
+                    fileSources.get(i));
+            downloaderThread.start();
+            executedThreads[i] = downloaderThread;
         }
         try {
-            threadPool.awaitTermination(10, TimeUnit.DAYS);
-        } catch (InterruptedException ie) {
+            for (int i = 0 ; i < numberOfFragments ; i++) {
+                executedThreads[i].join();
+            }
+        } catch(InterruptedException ie) {
             ie.printStackTrace();
         }
         writeFragmentsToFile(file);

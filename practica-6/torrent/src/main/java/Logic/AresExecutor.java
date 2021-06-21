@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class AresExecutor {
     public static void main(String[] args) {
-        int serverNumber = 3;
+        int serverNumber = 2;
         
         String rmiHost = "127.0.0.1";
         int rmiPort = 1200 + serverNumber;

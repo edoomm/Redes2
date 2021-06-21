@@ -30,7 +30,6 @@ public class FragmentFileSender extends Thread {
             initializeServer();
             while(active) {
                 clientSocket = serverSocket.accept();
-                System.out.println(clientSocket.getInetAddress() + ":" + clientSocket.getPort());
                 (new FileSenderThread(clientSocket)).start();
             }
         } catch (IOException ioe) {
