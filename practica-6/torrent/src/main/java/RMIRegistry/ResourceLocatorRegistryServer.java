@@ -13,9 +13,11 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
     private String rootDirectory;
     private String host;
     private int port;
+    private int serverDownloadPort;
     
-    public ResourceLocatorRegistryServer(String directory, String host, int port) {
+    public ResourceLocatorRegistryServer(String directory, String host, int port, int serverDownloaderPort) {
         rootDirectory = directory;
+        this.serverDownloadPort = serverDownloaderPort;
         this.host = host;
         this.port = port;
     }
@@ -44,7 +46,8 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
                 new ResourceLocatorRegistryServer(
                     rootDirectory,
                     host,
-                    port
+                    port,
+                    serverDownloadPort
                 );
 	    
             IResourceLocator stub = 
@@ -78,7 +81,7 @@ public class ResourceLocatorRegistryServer implements IResourceLocator {
                             host, 
                             file, 
                             MD5Checksum.getMD5Checksum(file.getAbsolutePath()), 
-                            port));
+                            serverDownloadPort));
             }
         } catch (Exception e) {
             e.printStackTrace();

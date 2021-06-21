@@ -12,7 +12,8 @@ public class ResourceLocatorTests {
                     new ResourceLocatorRegistryServer(
                         "C:\\Users\\Donaldo\\Desktop\\ServerDirectory\\",
                         InetAddress.getLocalHost().toString(),
-                        1099
+                        1099,
+                        1234
                     );
 
             rlrs.initializeRMIServer();

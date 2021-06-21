@@ -40,19 +40,21 @@ public class Ares {
     }
     
     public void initialize () throws IOException {
+        fragmentFileSender = new FragmentFileSender(downloadServerPort);
+        fragmentFileSender.start();
+        
         multicastClient = new MulticastClient();
         multicastClient.start();
         
         RMIInformation localRMIServerInfo = new RMIInformation(
             rmiHost, rmiPort);
+        
         multicastServer = new MulticastServer(localRMIServerInfo);
         multicastServer.start();
         
-        resourceLocatorServer = new ResourceLocatorServerThread(localRootDirectory, rmiHost, rmiPort);
+        resourceLocatorServer = new ResourceLocatorServerThread(localRootDirectory, rmiHost, rmiPort, downloadServerPort);
         resourceLocatorServer.start();
         
-        fragmentFileSender = new FragmentFileSender(downloadServerPort);
-        fragmentFileSender.start();
         
         resourceLocatorClient = new ResourceLocatorClient();
     }
@@ -83,15 +85,21 @@ public class Ares {
             System.out.println("Enter the checksum of the wished file: ");
             String checksum = reader.nextLine();
             
-            System.out.println("Downoading " + foundFiles.get(checksum).get(0).getFile().getName() + 
-                    " from " + foundFiles.get(checksum).size() + "servers...");
+            if (foundFiles.get(checksum) != null) {
+                System.out.println("Downloading " + foundFiles.get(checksum).get(0).getFile().getName() + 
+                    " from " + foundFiles.get(checksum).size() + " servers...\n");
+
+                FragmentedFileDownloader fileDownloader = 
+                        new FragmentedFileDownloader(foundFiles.get(checksum),
+                        localRootDirectory);
+                fileDownloader.downloadFragments();
+                
+                System.out.println("File downloaded successfully");
+            } else {
+                System.out.println("Invalid Checksum");
+            }
             
-            FragmentedFileDownloader fileDownloader = 
-                    new FragmentedFileDownloader(foundFiles.get(checksum),
-                    localRootDirectory);
-            fileDownloader.downloadFragments();
             
-            System.out.println("File downloaded successfully");
         }
     }
 }

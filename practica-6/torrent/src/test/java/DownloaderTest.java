@@ -13,14 +13,11 @@ public class DownloaderTest {
             "",
             1234);
         
-        FileInformation fi2 = new FileInformation(
-            "127.0.0.1",
-            new File("C:\\Users\\Donaldo\\Desktop\\Server1\\file2.txt"),
-            "",
-            1235);
+        
         
         ArrayList<FileInformation> list = new ArrayList<FileInformation>();
-        list.add(fi1); list.add(fi2);
+        list.add(fi1); 
+        //list.add(fi2);
         
         FragmentedFileDownloader ffd = new FragmentedFileDownloader(
             list,

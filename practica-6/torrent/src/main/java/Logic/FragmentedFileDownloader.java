@@ -11,6 +11,9 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class FragmentedFileDownloader {
     private List<FileInformation> fileSources;
@@ -18,6 +21,8 @@ public class FragmentedFileDownloader {
     private long fileFragmentLength;
     private int numberOfFragments;
     private String rootDirectory;
+    private ExecutorService threadPool;
+    private final int THREAD_NO = 5;
     
     public FragmentedFileDownloader(List<FileInformation> fileSources, String rootDirectory) {
         this.fileSources = fileSources;
@@ -26,27 +31,29 @@ public class FragmentedFileDownloader {
         fileFragmentLength = fileSize / numberOfFragments;
         fileFragments = new byte[numberOfFragments][(int)fileFragmentLength];
         
+        threadPool = Executors.newFixedThreadPool(THREAD_NO);
+        
         this.rootDirectory = rootDirectory;
     }
     
     public void downloadFragments () {
-        try {
-            File file = null;
-            for (int i = 0 ; i < numberOfFragments ; i++) {
-                file = fileSources.get(i).getFile();
-                Thread downloader = 
+        File file = null;
+        for (int i = 0 ; i < numberOfFragments ; i++) {
+            file = fileSources.get(i).getFile();
+            threadPool.execute(
                 new FragmentDownloaderThread(
                     i,
                     i*fileFragmentLength,
                     fileFragmentLength,
-                    fileSources.get(i));
-                downloader.start();
-                downloader.join();
-            }
-            writeFragmentsToFile(file);
+                    fileSources.get(i))
+            );
+        }
+        try {
+            threadPool.awaitTermination(10, TimeUnit.DAYS);
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
+        writeFragmentsToFile(file);
     }
     
     private void writeFragmentsToFile(File file) {
@@ -92,7 +99,6 @@ public class FragmentedFileDownloader {
         public void establishConnection () {
             try {
                 socket = new Socket (fileInformation.getServerIpAddress(), fileInformation.getServerPort());
-                System.out.println("Connection established with FileSender");
                 outputStream = new java.io.ObjectOutputStream(socket.getOutputStream());
             } catch ( IOException ioe ) {
                 ioe.printStackTrace();
@@ -101,10 +107,8 @@ public class FragmentedFileDownloader {
         
         public void sendRequest ( FragmentDownloadInformation fileInfo ) {
             try {
-                System.out.println("Sending request");
                 outputStream.writeObject(fileInfo);
                 outputStream.flush();
-                System.out.println("Request sent");
             } catch ( IOException ioe ) {
                 ioe.printStackTrace();
             }
@@ -119,22 +123,15 @@ public class FragmentedFileDownloader {
                 DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
 
                 byte[] buffer = new byte[1500];
-                System.out.println("Receiving file: " + fileInformation.getFile().getName());
                 while (pendingBytes > 0 && (readBytes = dataInputStream.read(buffer))!= -1) {
-                    System.out.println("Reading " + readBytes + " bytes");
                     
                     for(int i = 0 ; i < readBytes ; i++) {
-                        System.out.println("Check 1");
                         byte check = fileFragments[(int)fragment][(int)totalReadBytes];
-                        System.out.println("Check 2");
                         check = buffer[i];
-                        System.out.println("Check 3");
                         fileFragments[(int)fragment][(int)totalReadBytes++] = buffer[i];
                     }
                     
                     pendingBytes -= readBytes;
-                    System.out.println("Pending bytes: " + pendingBytes + " / " + fragmentSize);
-                    
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();

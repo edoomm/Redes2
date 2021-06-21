@@ -11,8 +11,8 @@ public class AresExecutor {
         int downloadServerPort = 1100 + serverNumber;
         String localRootDirectory = "C:\\Users\\Donaldo\\Desktop\\Server" + serverNumber + "\\";
         
-        
         Ares ares = new Ares(rmiHost, downloadServerPort, rmiPort, localRootDirectory);
+        
         try {
             ares.initialize();
             ares.start();

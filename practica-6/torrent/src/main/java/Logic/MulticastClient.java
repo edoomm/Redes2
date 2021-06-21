@@ -51,10 +51,6 @@ public class MulticastClient implements Runnable {
                 RMIInformation rmiInformation = (RMIInformation)ois.readObject();
                 
                 rmiServers.add(rmiInformation);
-                
-                //System.out.println("Elements in the tree: " + rmiServers.size());
-                
-                //System.out.println("Received RMI info. : " + rmiInformation);
             }
         } catch(IOException ioe) {
             ioe.printStackTrace();

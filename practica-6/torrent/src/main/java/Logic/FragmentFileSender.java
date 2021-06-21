@@ -29,11 +29,9 @@ public class FragmentFileSender extends Thread {
         try {
             initializeServer();
             while(active) {
-                System.out.println("Waiting for connections on FragmentFileSender...");
                 clientSocket = serverSocket.accept();
-                System.out.println("Connection accepted");
+                System.out.println(clientSocket.getInetAddress() + ":" + clientSocket.getPort());
                 (new FileSenderThread(clientSocket)).start();
-                System.out.println("New connection");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -69,7 +67,6 @@ public class FragmentFileSender extends Thread {
         public void sendFile () {
             try {
                 FragmentDownloadInformation fileInfo = (FragmentDownloadInformation)inputStream.readObject();
-                System.out.println("Received request for " + fileInfo);
                 String fileName = fileInfo.getFile().getAbsolutePath();
 
                 // Flujo para leer la información del archivo
@@ -77,16 +74,15 @@ public class FragmentFileSender extends Thread {
                 raf.seek(fileInfo.getInitialPosition());
                 
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                byte[] buffer = new byte[1500];
+                byte[] buffer = new byte[(int)fileInfo.getFragmentSize()];
                 long pendingBytes = fileInfo.getFragmentSize();
                 int bytesLeidos = 0;
                 
                 
                 // Mientras falten bytes por enviar y se puedan leer bytes del 
                 // archivo, se envía un paquete de información
-                System.out.println("SendingFile: " + fileInfo.getFile().getName());
 
-                while (pendingBytes > 0 && (bytesLeidos = raf.read(buffer, 0, (int)fileInfo.getFragmentSize())) != -1) {
+                while (pendingBytes > 0 && (bytesLeidos = raf.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesLeidos);
                     outputStream.flush();
                     pendingBytes -= bytesLeidos;
@@ -94,7 +90,6 @@ public class FragmentFileSender extends Thread {
 
                 outputStream.close();
                 raf.close();
-                System.out.println("File: " + fileInfo.getFile().getName() + " sent");
             } catch(IOException ioe) {
                 ioe.printStackTrace();
             } catch (ClassNotFoundException cnfe) {
